@@ -26,5 +26,7 @@ public class Constants {
     // Can't use telecom.EXTRA_DISABLE_ADD_CALL ...
     public static final String EXTRA_DISABLE_ADD_CALL = "android.telecom.extra.DISABLE_ADD_CALL";
 
+    public static final String NOTIFICATION_CHANNEL_ID_CALL = "notification_channel_call";
+
     public static final int FOREGROUND_SERVICE_TYPE_MICROPHONE = 128;
 }

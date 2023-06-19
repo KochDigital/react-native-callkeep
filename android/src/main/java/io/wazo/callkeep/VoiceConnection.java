@@ -17,9 +17,17 @@
 
 package io.wazo.callkeep;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.annotation.TargetApi;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioAttributes;
+import android.media.RingtoneManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -51,8 +59,8 @@ import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
+import static io.wazo.callkeep.Constants.NOTIFICATION_CHANNEL_ID_CALL;
 
-@TargetApi(Build.VERSION_CODES.M)
 public class VoiceConnection extends Connection {
     private boolean isMuted = false;
     private boolean answered = false;
@@ -335,6 +343,44 @@ public class VoiceConnection extends Connection {
     public void onShowIncomingCallUi() {
         Log.d(TAG, "[VoiceConnection] onShowIncomingCallUi");
         sendCallRequestToActivity(ACTION_SHOW_INCOMING_CALL_UI, handle);
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            // Create an intent which triggers your fullscreen incoming call user interface.
+            Bundle bundle = new Bundle();
+            bundle.putString("uuid", handle.get(EXTRA_CALL_UUID));
+            bundle.putString("name", handle.get(EXTRA_CALLER_NAME));
+
+            Intent intent = new Intent(Intent.ACTION_MAIN, null);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION | Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            intent.setClass(context, IncomingCallActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, 1, intent, PendingIntent.FLAG_MUTABLE);
+
+            // Build the notification as an ongoing high priority item; this ensures it will show as
+            // a heads up notification which slides down over top of the current content.
+            final Notification.Builder builder = new Notification.Builder(context, NOTIFICATION_CHANNEL_ID_CALL);
+            builder.setOngoing(true);
+
+            // Set notification content intent to take user to fullscreen UI if user taps on the
+            // notification body.
+            builder.setContentIntent(pendingIntent);
+            // Set full screen intent to trigger display of the fullscreen UI when the notification
+            // manager deems it appropriate.
+            builder.setFullScreenIntent(pendingIntent, true);
+
+            // Setup notification content.
+            builder.setSmallIcon(R.drawable.ic_launcher_round);
+            builder.setContentTitle("Incoming call");
+            builder.setContentText("Incoming call from " + handle.get(EXTRA_CALLER_NAME));
+
+            // Set notification as insistent to cause your ringtone to loop.
+            Notification notification = builder.build();
+            notification.flags |= Notification.FLAG_INSISTENT;
+
+            // Use builder.addAction(..) to add buttons to answer or reject the call.
+            NotificationManager notificationManager = context.getSystemService(
+                    NotificationManager.class);
+            notificationManager.notify(handle.get(EXTRA_CALL_UUID), 1, notification);
+        }
     }
 
     /*

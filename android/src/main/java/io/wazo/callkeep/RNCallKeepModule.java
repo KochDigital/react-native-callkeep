@@ -19,6 +19,8 @@ package io.wazo.callkeep;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -30,8 +32,10 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Icon;
+import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -98,6 +102,7 @@ import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
 import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
+import static io.wazo.callkeep.Constants.NOTIFICATION_CHANNEL_ID_CALL;
 
 // @see https://github.com/kbagchiGWC/voice-quickstart-android/blob/9a2aff7fbe0d0a5ae9457b48e9ad408740dfb968/exampleConnectionService/src/main/java/com/twilio/voice/examples/connectionservice/VoiceConnectionServiceActivity.java
 public class RNCallKeepModule extends ReactContextBaseJavaModule {
@@ -118,7 +123,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     private static TelecomManager telecomManager;
     private static TelephonyManager telephonyManager;
     private static Promise hasPhoneAccountPromise;
-    private ReactApplicationContext reactContext;
+    public static ReactApplicationContext reactContext;
     public static PhoneAccountHandle handle;
     private boolean isReceiverRegistered = false;
     private VoiceBroadcastReceiver voiceBroadcastReceiver;
@@ -263,6 +268,31 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             this.registerEvents();
             this.startObserving();
             VoiceConnectionService.setAvailable(true);
+        }
+
+
+        NotificationChannel channel = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID_CALL, "Incoming Calls",
+                    NotificationManager.IMPORTANCE_HIGH);
+        }
+        // other channel setup stuff goes here.
+
+        // We'll use the default system ringtone for our incoming call notification channel.  You can
+        // use your own audio resource here.
+        Uri ringtoneUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            channel.setSound(ringtoneUri, new AudioAttributes.Builder()
+                    // Setting the AudioAttributes is important as it identifies the purpose of your
+                    // notification sound.
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION_RINGTONE)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build());
+        }
+
+        NotificationManager mgr = this.reactContext.getSystemService(NotificationManager.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mgr.createNotificationChannel(channel);
         }
     }
 
