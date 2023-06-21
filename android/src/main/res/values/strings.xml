@@ -1,4 +1,5 @@
 <resources>
-    <string name="accept">Video</string>
+    <string name="accept">Answer</string>
     <string name="decline">Decline</string>
+    <string name="background">background</string>
 </resources>

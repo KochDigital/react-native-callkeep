@@ -431,7 +431,7 @@ public class VoiceConnectionService extends ConnectionService {
         HashMap<String, String> extrasMap = this.bundleToMap(extras);
 
         String callerNumber = request.getAddress().toString();
-        Log.d(TAG, "[VoiceConnectionService] createConnection, callerNumber:" + callerNumber);
+        Log.d(TAG, "[VoiceConnectionService] createConnection, callerNumber:" + callerNumber + ", uuid:" + extrasMap.get(EXTRA_CALL_UUID));
 
         if (callerNumber.contains(":")) {
             //CallerNumber contains a schema which we'll separate out

@@ -31,13 +31,20 @@ import android.media.RingtoneManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+
+import androidx.annotation.ColorRes;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.telecom.CallAudioState;
 import android.telecom.Connection;
 import android.telecom.DisconnectCause;
 import android.telecom.TelecomManager;
 import android.net.Uri;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -47,6 +54,8 @@ import java.util.HashMap;
 
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_CALL_ANSWER;
+import static io.wazo.callkeep.Constants.ACTION_CALL_END;
 import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL;
 import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
@@ -60,6 +69,9 @@ import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
 import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
 import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
 import static io.wazo.callkeep.Constants.NOTIFICATION_CHANNEL_ID_CALL;
+import static io.wazo.callkeep.Constants.NOTIFICATION_ID_INCOMING_CALL;
+import static io.wazo.callkeep.Constants.REQUEST_CODE_ACCEPT_CALL;
+import static io.wazo.callkeep.Constants.REQUEST_CODE_END_CALL;
 
 public class VoiceConnection extends Connection {
     private boolean isMuted = false;
@@ -341,23 +353,28 @@ public class VoiceConnection extends Connection {
 
     @Override
     public void onShowIncomingCallUi() {
-        Log.d(TAG, "[VoiceConnection] onShowIncomingCallUi");
+        Log.d(TAG, "[VoiceConnection] onShowIncomingCallUi" + ", uuid: " + handle.get(EXTRA_CALL_UUID) + ", callerName: " + handle.get(EXTRA_CALLER_NAME));
+
         sendCallRequestToActivity(ACTION_SHOW_INCOMING_CALL_UI, handle);
+
+        int requestCode = (int) System.currentTimeMillis();
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             // Create an intent which triggers your fullscreen incoming call user interface.
             Bundle bundle = new Bundle();
             bundle.putString("uuid", handle.get(EXTRA_CALL_UUID));
             bundle.putString("name", handle.get(EXTRA_CALLER_NAME));
+            bundle.putSerializable("attributeMap", handle);
 
             Intent intent = new Intent(Intent.ACTION_MAIN, null);
             intent.setFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION | Intent.FLAG_ACTIVITY_NEW_TASK  | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             intent.setClass(context, IncomingCallActivity.class);
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, 1, intent, PendingIntent.FLAG_MUTABLE);
+            intent.putExtras(bundle);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode , intent, PendingIntent.FLAG_IMMUTABLE);
 
             // Build the notification as an ongoing high priority item; this ensures it will show as
             // a heads up notification which slides down over top of the current content.
-            final Notification.Builder builder = new Notification.Builder(context, NOTIFICATION_CHANNEL_ID_CALL);
+            final NotificationCompat.Builder builder = new NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_ID_CALL);
             builder.setOngoing(true);
 
             // Set notification content intent to take user to fullscreen UI if user taps on the
@@ -370,7 +387,36 @@ public class VoiceConnection extends Connection {
             // Setup notification content.
             builder.setSmallIcon(R.drawable.ic_launcher_round);
             builder.setContentTitle("Incoming call");
-            builder.setContentText("Incoming call from " + handle.get(EXTRA_CALLER_NAME));
+            builder.setContentText(handle.get(EXTRA_CALLER_NAME));
+            builder.setCategory(NotificationCompat.CATEGORY_CALL);
+
+            // bundle to send to the receiver
+            Bundle extras = new Bundle();
+            extras.putSerializable("attributeMap", handle);
+
+            Intent intentAnswer = new Intent(context, IncomingCallReceiver.class);
+            intentAnswer.setAction(ACTION_CALL_ANSWER);
+            intentAnswer.putExtras(extras);
+            PendingIntent pendingIntentAnswer = PendingIntent.getBroadcast(context, requestCode, intentAnswer, PendingIntent.FLAG_IMMUTABLE );
+            NotificationCompat.Action answerAction = new NotificationCompat.Action.Builder(
+                    null,
+                    getActionText(R.string.accept, R.color.accept),
+                    pendingIntentAnswer
+            ).build();
+
+            builder.addAction(answerAction);
+
+            Intent intentReject = new Intent(context, IncomingCallReceiver.class);
+            intentReject.setAction(ACTION_CALL_END);
+            intentReject.putExtras(extras);
+            PendingIntent pendingIntentReject = PendingIntent.getBroadcast(context, requestCode, intentReject, PendingIntent.FLAG_IMMUTABLE );
+            NotificationCompat.Action rejectAction = new NotificationCompat.Action.Builder(
+                    null,
+                    getActionText(R.string.decline, R.color.decline),
+                    pendingIntentReject
+            ).build();
+
+            builder.addAction(rejectAction);
 
             // Set notification as insistent to cause your ringtone to loop.
             Notification notification = builder.build();
@@ -379,8 +425,17 @@ public class VoiceConnection extends Connection {
             // Use builder.addAction(..) to add buttons to answer or reject the call.
             NotificationManager notificationManager = context.getSystemService(
                     NotificationManager.class);
-            notificationManager.notify(handle.get(EXTRA_CALL_UUID), 1, notification);
+            notificationManager.notify(handle.get(EXTRA_CALL_UUID), NOTIFICATION_ID_INCOMING_CALL, notification);
         }
+    }
+
+    private Spannable getActionText(@StringRes int stringRes, @ColorRes int colorRes) {
+        Spannable spannable = new SpannableString(context.getText(stringRes));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            spannable.setSpan(
+                    new ForegroundColorSpan(context.getColor(colorRes)), 0, spannable.length(), 0);
+        }
+        return spannable;
     }
 
     /*

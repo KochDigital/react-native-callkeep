@@ -16,6 +16,7 @@ public class Constants {
     public static final String ACTION_ON_SILENCE_INCOMING_CALL = "ACTION_ON_SILENCE_INCOMING_CALL";
     public static final String ACTION_ON_CREATE_CONNECTION_FAILED = "ACTION_ON_CREATE_CONNECTION_FAILED";
     public static final String ACTION_DID_CHANGE_AUDIO_ROUTE = "ACTION_DID_CHANGE_AUDIO_ROUTE";
+    public static final String ACTION_DISMISS_CALL_UI = "ACTION_DISMISS_CALL_UI";
 
 
     public static final String EXTRA_CALL_NUMBER = "EXTRA_CALL_NUMBER";
@@ -26,7 +27,14 @@ public class Constants {
     // Can't use telecom.EXTRA_DISABLE_ADD_CALL ...
     public static final String EXTRA_DISABLE_ADD_CALL = "android.telecom.extra.DISABLE_ADD_CALL";
 
-    public static final String NOTIFICATION_CHANNEL_ID_CALL = "notification_channel_call";
+    public static final String NOTIFICATION_CHANNEL_ID_CALL = "cs_notification_channel_call";
+    public static final int NOTIFICATION_ID_INCOMING_CALL = 1337;
+
+    public static final int REQUEST_CODE_ACCEPT_CALL = 1000;
+    public static final int REQUEST_CODE_END_CALL = 1001;
 
     public static final int FOREGROUND_SERVICE_TYPE_MICROPHONE = 128;
+
+    public static final String ACTION_CALL_ANSWER = "io.wazo.callkeep.ACTION_CALL_ANSWER";
+    public static final String ACTION_CALL_END = "io.wazo.callkeep.ACTION_CALL_END";
 }

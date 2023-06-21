@@ -1,6 +1,6 @@
-import { NativeModules, Platform, Alert } from 'react-native';
+import { Alert, NativeModules, Platform } from 'react-native';
 
-import { listeners, emit } from './actions';
+import { emit, listeners } from './actions';
 
 const RNCallKeepModule = NativeModules.RNCallKeep;
 const isIOS = Platform.OS === 'ios';
@@ -17,7 +17,7 @@ const CONSTANTS = {
   },
 };
 
-export { emit, CONSTANTS };
+export { CONSTANTS, emit };
 
 class EventListener {
   constructor(type, listener, callkeep) {
@@ -373,6 +373,14 @@ class RNCallKeep {
 
   clearInitialEvents() {
     return RNCallKeepModule.clearInitialEvents();
+  }
+
+  dismissCallNotification(uuid) {
+    if (isIOS) {
+      return;
+    }
+
+    RNCallKeepModule.dismissCallNotification(uuid);
   }
 }
 

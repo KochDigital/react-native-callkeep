@@ -1,8 +1,36 @@
 package io.wazo.callkeep;
+import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
+import static io.wazo.callkeep.Constants.ACTION_AUDIO_SESSION;
+import static io.wazo.callkeep.Constants.ACTION_CALL_ANSWER;
+import static io.wazo.callkeep.Constants.ACTION_CHECK_REACHABILITY;
+import static io.wazo.callkeep.Constants.ACTION_DID_CHANGE_AUDIO_ROUTE;
+import static io.wazo.callkeep.Constants.ACTION_DISMISS_CALL_UI;
+import static io.wazo.callkeep.Constants.ACTION_DTMF_TONE;
+import static io.wazo.callkeep.Constants.ACTION_END_CALL;
+import static io.wazo.callkeep.Constants.ACTION_HOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_MUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_ONGOING_CALL;
+import static io.wazo.callkeep.Constants.ACTION_ON_CREATE_CONNECTION_FAILED;
+import static io.wazo.callkeep.Constants.ACTION_ON_SILENCE_INCOMING_CALL;
+import static io.wazo.callkeep.Constants.ACTION_SHOW_INCOMING_CALL_UI;
+import static io.wazo.callkeep.Constants.ACTION_UNHOLD_CALL;
+import static io.wazo.callkeep.Constants.ACTION_UNMUTE_CALL;
+import static io.wazo.callkeep.Constants.ACTION_WAKE_APP;
+import static io.wazo.callkeep.Constants.EXTRA_CALLER_NAME;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_NUMBER;
+import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
+import static io.wazo.callkeep.Constants.EXTRA_HAS_VIDEO;
+import static io.wazo.callkeep.Constants.NOTIFICATION_ID_INCOMING_CALL;
+
 import android.app.KeyguardManager;
+import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -13,16 +41,22 @@ import android.os.Vibrator;
 import android.content.Context;
 import android.media.MediaPlayer;
 import android.provider.Settings;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import android.app.Activity;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 
+import com.facebook.react.HeadlessJsTaskService;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableMap;
@@ -33,7 +67,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 public class IncomingCallActivity extends AppCompatActivity implements IncomingCallActivityInterface {
 
-    private static final String TAG = "MessagingService";
+    private static final String TAG = "IncomingCallActivity";
     private TextView tvName;
     private TextView tvInfo;
     private ImageView ivAvatar;
@@ -43,8 +77,11 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
     private static Vibrator v = (Vibrator) RNCallKeepModule.reactContext.getSystemService(Context.VIBRATOR_SERVICE);
     private long[] pattern = {0, 1000, 800};
     private static MediaPlayer player = MediaPlayer.create(RNCallKeepModule.reactContext, Settings.System.DEFAULT_RINGTONE_URI);
-    private static Activity fa;
     private Timer timer;
+
+    private IncomingCallBroadcastReceiver mMessageReceiver;
+
+    private HashMap<String, String> handle;
 
 
     @Override
@@ -70,19 +107,33 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
     }
 
     @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        NotificationManager notificationManager = getSystemService(
+                NotificationManager.class);
+        notificationManager.cancel(NOTIFICATION_ID_INCOMING_CALL);
+
+        unregisterReceivers();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        fa = this;
-
         setContentView(R.layout.activity_call_incoming);
 
         tvName = findViewById(R.id.tvName);
         tvInfo = findViewById(R.id.tvInfo);
-        ivAvatar = findViewById(R.id.ivAvatar);
 
         Bundle bundle = getIntent().getExtras();
+
         if (bundle != null) {
+            if (bundle.containsKey("attributeMap")) {
+                HashMap attributeMap = (HashMap<String, String>) bundle.getSerializable("attributeMap");
+                if (attributeMap != null) {
+                    handle = attributeMap;
+                }
+            }
+
             if (bundle.containsKey("uuid")) {
                 uuid = bundle.getString("uuid");
             }
@@ -124,7 +175,7 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
                 } catch (Exception e) {
                     WritableMap params = Arguments.createMap();
                     params.putString("message", e.getMessage());
-                    sendEvent("error", params);
+                    Log.d(TAG, "error: " + e.getMessage());
                     dismissDialing();
                 }
             }
@@ -141,6 +192,7 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
             }
         });
 
+        registerReceivers();
     }
 
     @Override
@@ -178,7 +230,7 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
             }
         }
 
-        sendEvent("answerCall", params);
+        sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
         finish();
     }
 
@@ -193,7 +245,7 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
             params.putBoolean("isHeadless", true);
         }
 
-        sendEvent("endCall", params);
+        sendCallRequestToActivity(Constants.ACTION_END_CALL, handle);
 
         finish();
     }
@@ -207,6 +259,26 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
 
             }
         });
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        String action = intent.getAction();
+
+        Log.d(TAG, "onNewIntent: " + action);
+
+        HashMap<String, String> attributeMap = (HashMap<String, String>)intent.getSerializableExtra("attributeMap");
+
+        if (action.equals(ACTION_CALL_ANSWER)) {
+            sendCallRequestToActivity(ACTION_CALL_ANSWER, attributeMap);
+            return;
+        }
+        if (action.equals(Constants.ACTION_CALL_END)) {
+            sendCallRequestToActivity(Constants.ACTION_END_CALL, attributeMap);
+            return;
+        }
     }
 
     @Override
@@ -226,9 +298,52 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
         Log.d(TAG, "onIncoming: ");
     }
 
-    private void sendEvent(String eventName, WritableMap params) {
-        RNCallKeepModule.reactContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(eventName, params);
+    /*
+     * Send call request to the RNCallKeepModule
+     */
+    private void sendCallRequestToActivity(final String action, @Nullable final HashMap attributeMap) {
+        final IncomingCallActivity instance = this;
+        final Handler handler = new Handler();
+
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                Intent intent = new Intent(action);
+                if (attributeMap != null) {
+                    Bundle extras = new Bundle();
+                    extras.putSerializable("attributeMap", attributeMap);
+                    intent.putExtras(extras);
+                }
+                LocalBroadcastManager.getInstance(IncomingCallActivity.this).sendBroadcast(intent);
+            }
+        });
+    }
+
+    private void registerReceivers() {
+        mMessageReceiver = new IncomingCallBroadcastReceiver();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                mMessageReceiver, new IntentFilter(ACTION_DISMISS_CALL_UI));
+    }
+
+    private void unregisterReceivers() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+    }
+
+    private class IncomingCallBroadcastReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            WritableMap args = Arguments.createMap();
+
+            String callUuid = intent.getStringExtra(EXTRA_CALL_UUID);
+
+            Log.d(TAG, "[IncomingCallBroadcastReceiver][onReceive] " + intent.getAction());
+
+
+            if (ACTION_DISMISS_CALL_UI.equals(intent.getAction())) {
+                if(callUuid.equals(uuid)) {
+                    dismissIncoming();
+                }
+            }
+        }
     }
 }

@@ -130,6 +130,8 @@ declare module '@aldiand/react-native-callkeep' {
 
     static unregisterAndroidEvents(): void
 
+    static dismissCallNotification(uuid: string): Promise<any>;
+
     static displayIncomingCall(
       uuid: string,
       handle: string,
