@@ -73,17 +73,17 @@
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_decline_call"
                 />
+
             <TextView
                 android:id="@+id/tvDecline"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="10dp"
-                android:textSize="14sp"
                 android:fontFamily="sans-serif"
-                android:textColor="#ADADAD"
-                android:text="@string/decline"
                 android:gravity="center"
-                />
+                android:text="@string/decline"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -101,17 +101,17 @@
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_accept_call"
                 />
+
             <TextView
                 android:id="@+id/tvAccept"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="10dp"
-                android:textSize="14sp"
                 android:fontFamily="sans-serif"
-                android:textColor="#ADADAD"
-                android:text="@string/accept"
                 android:gravity="center"
-                />
+                android:text="@string/accept"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp" />
         </LinearLayout>
 
     </LinearLayout>
