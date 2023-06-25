@@ -939,7 +939,14 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         Log.d(TAG, "[RNCallKeepModule] backToForeground, app isOpened ?" + (isOpened ? "true" : "false"));
 
         if (isOpened) {
-            focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                    WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+            focusIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT +
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED +
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD +
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
             activity.startActivity(focusIntent);
         } else {
             focusIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK +
@@ -1156,15 +1163,31 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
 
             Log.d(TAG, "[RNCallKeepModule][onReceive] " + intent.getAction());
 
+            NotificationManager notificationManager = context.getSystemService(
+                    NotificationManager.class);
+
+            Activity activity = getCurrentReactActivity();
+            boolean isOpened = activity != null;
+
             switch (intent.getAction()) {
                 case ACTION_END_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     sendEventToJS("RNCallKeepPerformEndCallAction", args);
+                    notificationManager.cancel(attributeMap.get(EXTRA_CALL_UUID), NOTIFICATION_ID_INCOMING_CALL);
+
+                    if(isOpened) {
+                        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                    }
                     break;
                 case ACTION_ANSWER_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     args.putBoolean("withVideo", Boolean.valueOf(attributeMap.get(EXTRA_HAS_VIDEO)));
                     sendEventToJS("RNCallKeepPerformAnswerCallAction", args);
+                    backToForeground();
+                    notificationManager.cancel(attributeMap.get(EXTRA_CALL_UUID), NOTIFICATION_ID_INCOMING_CALL);
                     break;
                 case ACTION_HOLD_CALL:
                     args.putBoolean("hold", true);

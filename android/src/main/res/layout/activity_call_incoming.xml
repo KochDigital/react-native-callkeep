@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/background"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
@@ -20,7 +21,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="64dp"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
         android:gravity="center_horizontal"
@@ -31,20 +32,20 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:textSize="22sp"
             android:fontFamily="sans-serif"
             android:textColor="#FFFFFF"
-            />
+            android:textSize="22sp"
+            tools:text="612383580706" />
 
         <TextView
             android:id="@+id/tvInfo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:textSize="14sp"
             android:fontFamily="sans-serif"
+            android:text="Incoming Audio Call"
             android:textColor="#ADADAD"
-            />
+            android:textSize="14sp" />
 
     </LinearLayout>
 
@@ -83,7 +84,8 @@
                 android:gravity="center"
                 android:text="@string/decline"
                 android:textColor="#FFFFFF"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="invisible" />
         </LinearLayout>
 
         <LinearLayout
@@ -111,7 +113,8 @@
                 android:gravity="center"
                 android:text="@string/accept"
                 android:textColor="#FFFFFF"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:visibility="invisible" />
         </LinearLayout>
 
     </LinearLayout>
