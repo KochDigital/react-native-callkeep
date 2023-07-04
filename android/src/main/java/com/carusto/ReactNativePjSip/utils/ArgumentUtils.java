@@ -2,11 +2,11 @@ package com.carusto.ReactNativePjSip.utils;
 
 import android.content.Intent;
 import android.util.Log;
-
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 import com.facebook.react.bridge.WritableNativeMap;
+import com.google.gson.*;
 import com.google.gson.internal.LazilyParsedNumber;
 
 import java.util.HashMap;
