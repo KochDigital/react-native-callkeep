@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
 public interface PjSipVideoMediaChange {
     void onChange();

@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip.dto;
+package io.wazo.callkeep.dto;
 
 import android.content.Intent;
 

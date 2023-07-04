@@ -1,6 +1,6 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
-import com.carusto.ReactNativePjSip.dto.AccountConfigurationDTO;
+import io.wazo.callkeep.dto.AccountConfigurationDTO;
 
 import org.json.JSONObject;
 import org.pjsip.pjsua2.Account;

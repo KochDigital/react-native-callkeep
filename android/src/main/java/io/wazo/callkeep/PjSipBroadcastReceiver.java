@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
 import static io.wazo.callkeep.Constants.ACTION_ANSWER_CALL;
 import static io.wazo.callkeep.Constants.ACTION_END_CALL;
@@ -10,7 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 
-import com.carusto.ReactNativePjSip.utils.ArgumentUtils;
+import io.wazo.callkeep.utils.ArgumentUtils;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.modules.core.DeviceEventManagerModule;

@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
 import static io.wazo.callkeep.Constants.EXTRA_CALL_UUID;
 
@@ -26,11 +26,11 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.carusto.ReactNativePjSip.dto.AccountConfigurationDTO;
-import com.carusto.ReactNativePjSip.dto.CallSettingsDTO;
-import com.carusto.ReactNativePjSip.dto.ServiceConfigurationDTO;
-import com.carusto.ReactNativePjSip.dto.SipMessageDTO;
-import com.carusto.ReactNativePjSip.utils.ArgumentUtils;
+import io.wazo.callkeep.dto.AccountConfigurationDTO;
+import io.wazo.callkeep.dto.CallSettingsDTO;
+import io.wazo.callkeep.dto.ServiceConfigurationDTO;
+import io.wazo.callkeep.dto.SipMessageDTO;
+import io.wazo.callkeep.utils.ArgumentUtils;
 
 import org.json.JSONObject;
 import org.pjsip.pjsua2.AccountConfig;
@@ -62,8 +62,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import io.wazo.callkeep.R;
 
 
 public class PjSipService extends Service {

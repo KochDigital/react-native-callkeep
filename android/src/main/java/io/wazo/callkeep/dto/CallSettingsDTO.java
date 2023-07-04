@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip.dto;
+package io.wazo.callkeep.dto;
 
 import com.facebook.react.bridge.ReadableMap;
 import com.google.gson.Gson;

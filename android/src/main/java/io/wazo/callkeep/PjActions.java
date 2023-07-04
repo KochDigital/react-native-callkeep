@@ -1,11 +1,11 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.carusto.ReactNativePjSip.dto.CallSettingsDTO;
-import com.carusto.ReactNativePjSip.dto.SipMessageDTO;
+import io.wazo.callkeep.dto.CallSettingsDTO;
+import io.wazo.callkeep.dto.SipMessageDTO;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;

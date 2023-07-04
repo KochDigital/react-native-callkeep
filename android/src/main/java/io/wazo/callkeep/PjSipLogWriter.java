@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
 import android.util.Log;
 import org.pjsip.pjsua2.LogEntry;

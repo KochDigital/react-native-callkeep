@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
 import org.json.JSONObject;
 import org.pjsip.pjsua2.OnInstantMessageParam;

@@ -1,9 +1,8 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
 import android.content.Context;
 import android.media.AudioManager;
 import android.util.Log;
-import android.view.View;
 
 import com.google.gson.Gson;
 
@@ -11,7 +10,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.pjsip.pjsua2.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 

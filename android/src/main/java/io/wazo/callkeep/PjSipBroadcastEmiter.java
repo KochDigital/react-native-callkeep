@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
 import android.content.Context;
 import android.content.Intent;
@@ -8,8 +8,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.List;
-
-import io.wazo.callkeep.RNCallKeepModule;
 
 public class PjSipBroadcastEmiter {
 

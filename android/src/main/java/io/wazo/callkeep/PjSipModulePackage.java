@@ -1,4 +1,4 @@
-package com.carusto.ReactNativePjSip;
+package io.wazo.callkeep;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;

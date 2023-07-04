@@ -1,6 +1,6 @@
 {
   "name": "@aldiand/react-native-callkeep",
-  "version": "5.0.5",
+  "version": "5.0.6",
   "description": "iOS 10 CallKit and Android ConnectionService Framework For React Native",
   "main": "index.js",
   "scripts": {
@@ -25,5 +25,7 @@
   "devDependencies": {
     "react-native": ">=0.40.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "events": "1.1.0"
+  }
 }
