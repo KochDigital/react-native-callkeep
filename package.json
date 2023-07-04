@@ -3,7 +3,9 @@
   "version": "5.0.0",
   "description": "iOS 10 CallKit and Android ConnectionService Framework For React Native",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "postinstall": "bash libs.sh"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/react-native-webrtc/react-native-callkeep.git"
