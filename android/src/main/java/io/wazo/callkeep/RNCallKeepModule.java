@@ -122,7 +122,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     };
 
     private static final String TAG = "RNCallKeep";
-    private static TelecomManager telecomManager;
+    public static TelecomManager telecomManager;
     private static TelephonyManager telephonyManager;
     private static Promise hasPhoneAccountPromise;
     public static ReactApplicationContext reactContext;
@@ -1183,10 +1183,12 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                     }
                     break;
                 case ACTION_ANSWER_CALL:
+                    String callUUID = attributeMap.get(EXTRA_CALL_UUID);
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
                     args.putBoolean("withVideo", Boolean.valueOf(attributeMap.get(EXTRA_HAS_VIDEO)));
                     sendEventToJS("RNCallKeepPerformAnswerCallAction", args);
                     backToForeground();
+                    answerIncomingCall(callUUID);
                     notificationManager.cancel(attributeMap.get(EXTRA_CALL_UUID), NOTIFICATION_ID_INCOMING_CALL);
                     break;
                 case ACTION_HOLD_CALL:
