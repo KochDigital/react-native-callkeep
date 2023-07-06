@@ -37,11 +37,11 @@ public class IncomingCallReceiver extends BroadcastReceiver {
         notificationManager.cancel(uuid, NOTIFICATION_ID_INCOMING_CALL);
 
         if (action.equals(ACTION_CALL_ANSWER)) {
-            sendCallRequestToActivity(ACTION_ANSWER_CALL, attributeMap);
+            RNCallKeepModule.instance.answerIncomingCall(uuid);
             return;
         }
         if (action.equals(Constants.ACTION_CALL_END)) {
-            sendCallRequestToActivity(Constants.ACTION_END_CALL, attributeMap);
+            RNCallKeepModule.instance.rejectCall(uuid);
             return;
         }
     }

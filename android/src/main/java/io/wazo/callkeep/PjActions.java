@@ -131,6 +131,15 @@ public class PjActions {
         return intent;
     }
 
+    public static Intent createHangupCallIntent(int callbackId, String callUuid, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_HANGUP_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra(Constants.EXTRA_CALL_UUID, callUuid);
+
+        return intent;
+    }
+
     public static Intent createDeclineCallIntent(int callbackId, int callId, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.ACTION_DECLINE_CALL);
@@ -140,11 +149,29 @@ public class PjActions {
         return intent;
     }
 
+    public static Intent createDeclineCallIntent(int callbackId, String callUuid, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_DECLINE_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra(Constants.EXTRA_CALL_UUID, callUuid);
+
+        return intent;
+    }
+
     public static Intent createAnswerCallIntent(int callbackId, int callId, Context context) {
         Intent intent = new Intent(context, PjSipService.class);
         intent.setAction(PjActions.ACTION_ANSWER_CALL);
         intent.putExtra("callback_id", callbackId);
         intent.putExtra("call_id", callId);
+
+        return intent;
+    }
+
+    public static Intent createAnswerCallIntent(int callbackId, String callUuid, Context context) {
+        Intent intent = new Intent(context, PjSipService.class);
+        intent.setAction(PjActions.ACTION_ANSWER_CALL);
+        intent.putExtra("callback_id", callbackId);
+        intent.putExtra(Constants.EXTRA_CALL_UUID, callUuid);
 
         return intent;
     }

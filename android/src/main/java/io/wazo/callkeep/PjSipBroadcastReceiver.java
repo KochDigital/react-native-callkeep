@@ -88,23 +88,10 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
             case PjActions.EVENT_CALL_TERMINATED:
                 onCallTerminated(intent);
                 break;
-            case ACTION_ANSWER_CALL:
-                onAnswerCall(intent);
-                break;
             default:
                 onCallback(intent);
                 break;
         }
-    }
-
-    private void onAnswerCall(Intent intent) {
-        HashMap<String, String> attributeMap = (HashMap<String, String>)intent.getSerializableExtra("attributeMap");
-        String callUUID = attributeMap.get(EXTRA_CALL_UUID);
-
-        Intent actionIntent = PjActions.createAnswerCallIntent(-1, -1, context);
-        actionIntent.putExtra(EXTRA_CALL_UUID, callUUID);
-
-        context.startService(actionIntent);
     }
 
     private void onRegistrationChanged(Intent intent) {

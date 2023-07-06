@@ -275,7 +275,9 @@ public class PjSipService extends Service {
         notificationBuilder.setOngoing(true)
                 .setContentTitle("CloudPBX Service")
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
+                .setSmallIcon(R.drawable.ic_stat_ic_launcher_round)
                 .setCategory(Notification.CATEGORY_SERVICE);
+
 
         Activity currentActivity = PjSipModule.instance.getCurrentReactActivity();
         if (currentActivity != null) {
@@ -288,8 +290,6 @@ public class PjSipService extends Service {
 
             notificationBuilder.setContentIntent(pendingIntent);
         }
-
-        notificationBuilder.setSmallIcon(R.drawable.ic_launcher_round);
 
         Log.d(TAG, "[PjSipService] Starting foreground service");
 
@@ -758,7 +758,15 @@ public class PjSipService extends Service {
     private void handleCallHangup(Intent intent) {
         try {
             int callId = intent.getIntExtra("call_id", -1);
-            PjSipCall call = findCall(callId);
+            PjSipCall call;
+
+            if(callId == -1) {
+                String callUuid = intent.getStringExtra(EXTRA_CALL_UUID);
+                call = findCallUuid(callUuid);
+            } else {
+                call = findCall(callId);
+            }
+
             final int callState = call.getInfo().getState();
             call.hangup(new CallOpParam(true));
 
@@ -776,7 +784,15 @@ public class PjSipService extends Service {
             int callId = intent.getIntExtra("call_id", -1);
 
             // -----
-            PjSipCall call = findCall(callId);
+            PjSipCall call;
+
+            if(callId == -1) {
+                String callUuid = intent.getStringExtra(EXTRA_CALL_UUID);
+                call = findCallUuid(callUuid);
+            } else {
+                call = findCall(callId);
+            }
+
             CallOpParam prm = new CallOpParam(true);
             prm.setStatusCode(pjsip_status_code.PJSIP_SC_DECLINE);
             call.hangup(prm);

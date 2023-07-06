@@ -429,6 +429,21 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         audioManager.setMode(0);
         conn.onDisconnect();
 
+        dismissCallNotification(uuid);
+
+        Activity activity = this.getCurrentReactActivity();
+        if(activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
+                            WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
+                            WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
+                            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                }
+            });
+        }
+
         Log.d(TAG, "[RNCallKeepModule] endCall executed, uuid: " + uuid);
     }
 
@@ -1172,15 +1187,7 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
             switch (intent.getAction()) {
                 case ACTION_END_CALL:
                     args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
-                    sendEventToJS("RNCallKeepPerformEndCallAction", args);
-                    notificationManager.cancel(attributeMap.get(EXTRA_CALL_UUID), NOTIFICATION_ID_INCOMING_CALL);
 
-                    if(isOpened) {
-                        activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD |
-                                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED |
-                                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON |
-                                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    }
                     break;
                 case ACTION_ANSWER_CALL:
                     String callUUID = attributeMap.get(EXTRA_CALL_UUID);

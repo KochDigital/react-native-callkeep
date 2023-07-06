@@ -230,7 +230,7 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
             }
         }
 
-        sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
+        RNCallKeepModule.instance.answerIncomingCall(uuid);
         finish();
     }
 
@@ -245,7 +245,7 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
             params.putBoolean("isHeadless", true);
         }
 
-        sendCallRequestToActivity(Constants.ACTION_END_CALL, handle);
+        RNCallKeepModule.instance.rejectCall(uuid);
 
         finish();
     }

@@ -37,6 +37,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import android.provider.Settings;
 import android.telecom.CallAudioState;
 import android.telecom.Connection;
 import android.telecom.DisconnectCause;
@@ -159,6 +161,10 @@ public class VoiceConnection extends Connection {
         } catch(Throwable exception) {
             Log.e(TAG, "[VoiceConnection] onDisconnect handle map error", exception);
         }
+
+        Intent intent = PjActions.createHangupCallIntent(-1, handle.get(EXTRA_CALL_UUID), context);
+        context.startService(intent);
+
         destroy();
     }
 
@@ -330,6 +336,10 @@ public class VoiceConnection extends Connection {
 
         sendCallRequestToActivity(ACTION_ANSWER_CALL, handle);
         sendCallRequestToActivity(ACTION_AUDIO_SESSION, handle);
+
+        Intent intent = PjActions.createAnswerCallIntent(-1, handle.get(EXTRA_CALL_UUID), context);
+        context.startService(intent);
+
         Log.d(TAG, "[VoiceConnection] onAnswer executed");
     }
 
@@ -348,6 +358,10 @@ public class VoiceConnection extends Connection {
         } catch(Throwable exception) {
             Log.e(TAG, "[VoiceConnection] onReject, handle map error", exception);
         }
+
+        Intent intent = PjActions.createDeclineCallIntent(-1, handle.get(EXTRA_CALL_UUID), context);
+        context.startService(intent);
+
         destroy();
     }
 
@@ -389,6 +403,7 @@ public class VoiceConnection extends Connection {
             builder.setContentTitle("Incoming call");
             builder.setContentText(handle.get(EXTRA_CALLER_NAME));
             builder.setCategory(NotificationCompat.CATEGORY_CALL);
+            builder.setSound(Settings.System.DEFAULT_RINGTONE_URI);
 
             // bundle to send to the receiver
             Bundle extras = new Bundle();
