@@ -188,10 +188,15 @@
         info.state == PJSIP_INV_STATE_DISCONNECTED) {
         connectDuration = info.connect_duration.sec;
     }
+    
+    NSString* cid = self.callId;
+    if (cid == nil) {
+        cid = [PjSipUtil toString:&info.call_id];
+    }
 
     return @{
         @"id": @(self.id),
-        @"callId": [PjSipUtil toString:&info.call_id],
+        @"callId": cid,
         @"accountId": @(info.acc_id),
         
         @"localContact": [PjSipUtil toString:&info.local_contact],

@@ -35,6 +35,7 @@
 
 -(void)changeOrientation: (NSString*) orientation;
 -(void)changeCodecSettings: (NSDictionary*) codecSettings;
+-(void)assignCall:(PjSipCall*) call callId:(int)callId;
 
 -(void)emmitRegistrationChanged:(PjSipAccount*) account;
 -(void)emmitCallReceived:(PjSipCall*) call;

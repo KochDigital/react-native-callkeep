@@ -8,6 +8,7 @@
 @property bool isMuted;
 @property bool isConference;
 @property NSMutableDictionary* conferencePeers;
+@property NSString* callId;
 
 + (instancetype)itemConfig:(int)id;
 

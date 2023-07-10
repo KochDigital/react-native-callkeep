@@ -336,6 +336,10 @@
     [[PjSipModule getInstance] sendEventName:name body:body];
 }
 
+-(void)assignCall:(PjSipCall*) call callId:(int)callId{
+    self.calls[@(callId)] = call;
+}
+
 
 #pragma mark - Callbacks
 
@@ -351,8 +355,15 @@ static void onRegStateChanged(pjsua_acc_id accId) {
 static void onCallReceived(pjsua_acc_id accId, pjsua_call_id callId, pjsip_rx_data *rx) {
     PjSipEndpoint* endpoint = [PjSipEndpoint instance];
     
+    NSString* csId = [PjSipUtil callIdFromHeader:[NSString stringWithFormat:@"%s", rx->msg_info.msg_buf]];
+    
     PjSipCall *call = [PjSipCall itemConfig:callId];
-    endpoint.calls[@(callId)] = call;
+    
+    if(csId != nil) {
+        call.callId = [PjSipUtil csIdtoUuid:csId];
+    }
+    
+    [endpoint assignCall:call callId:callId];
     
     [endpoint emmitCallReceived:call];
     pjsua_call_answer(callId, 180, NULL, NULL);

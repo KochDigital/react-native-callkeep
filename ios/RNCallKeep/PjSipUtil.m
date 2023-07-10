@@ -263,4 +263,45 @@
     
 }
 
++(NSString *) csIdtoUuid: (NSString *)csId {
+    NSLog(@"csId to uuid input:%@", csId);
+    NSString* template = @"00000000-0000-4000-8000-000000000000";
+    NSMutableString* filledTemplate = [NSMutableString string];
+    NSString* sanitizedString = [csId stringByReplacingOccurrencesOfString:@"." withString:@""];
+    NSUInteger stringIndex = 0;
+
+    for (NSUInteger i = 0; i < template.length; i++) {
+        unichar character = [template characterAtIndex:i];
+        if (character == '0') {
+            if (stringIndex < sanitizedString.length) {
+                unichar replacementChar = [sanitizedString characterAtIndex:stringIndex];
+                [filledTemplate appendString:[NSString stringWithCharacters:&replacementChar length:1]];
+                stringIndex++;
+            } else {
+                [filledTemplate appendString:[NSString stringWithCharacters:&character length:1]];
+            }
+        } else {
+            [filledTemplate appendString:[NSString stringWithCharacters:&character length:1]];
+        }
+    }
+
+    NSLog(@"csId to uuid output:%@", filledTemplate);
+    return filledTemplate;
+}
+
++(NSString *) callIdFromHeader: (NSString *)hdrText {
+    NSRegularExpression *regex = [NSRegularExpression regularExpressionWithPattern:@"cs-call-id: ([^\r\n]+)" options:0 error:nil];
+    NSTextCheckingResult *match = [regex firstMatchInString:hdrText options:0 range:NSMakeRange(0, hdrText.length)];
+
+    if (match) {
+        NSRange range = [match rangeAtIndex:1];
+        NSString *csCallId = [hdrText substringWithRange:range];
+        return csCallId;
+    } else {
+        NSLog(@"cs-call-id not found.");
+    }
+    return nil;
+}
+
+
 @end

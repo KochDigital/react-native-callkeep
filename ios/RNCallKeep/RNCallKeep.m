@@ -130,7 +130,7 @@ RCT_EXPORT_MODULE()
 
 - (void)stopObserving
 {
-    _hasListeners = FALSE;
+//    _hasListeners = FALSE;
 }
 
 - (void)onAudioRouteChange:(NSNotification *)notification
@@ -793,6 +793,10 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
             completion();
         }
     }];
+    
+    if(!fromPushKit) {
+        [sharedProvider reportCallWithUUID:uuid updated:callUpdate];
+    }
 }
 
 - (NSString *)getIncomingCallErrorCode:(NSError *)error {
