@@ -265,8 +265,8 @@ public class PjSipService extends Service {
         }
         Log.d(TAG, "[PjSipService] startForegroundService");
 
-        String NOTIFICATION_CHANNEL_ID = "CloudPBXService";
-        String channelName = "CloudPBX Service";
+        String NOTIFICATION_CHANNEL_ID = "io.wazo.callkeep.VoiceConnectionService";
+        String channelName = "CobhamSatcom Service";
         NotificationChannel chan = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_NONE);
         chan.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
         NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -275,7 +275,7 @@ public class PjSipService extends Service {
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID);
         notificationBuilder.setOngoing(true)
-                .setContentTitle("CloudPBX Service")
+                .setContentTitle("CobhamSatcom Service")
                 .setPriority(NotificationManager.IMPORTANCE_MIN)
                 .setSmallIcon(R.drawable.ic_stat_ic_launcher_round)
                 .setCategory(Notification.CATEGORY_SERVICE);
