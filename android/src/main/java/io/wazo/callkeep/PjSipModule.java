@@ -58,10 +58,14 @@ public class PjSipModule extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void start(ReadableMap configuration, Callback callback) {
+        Log.d(TAG, "[PjSipModule] start called");
         int id = receiver.register(callback);
+        Log.d(TAG, "[PjSipModule] start id"+id);
+        Log.d(TAG, "[PjSipModule] start configuration"+configuration);
         Intent intent = PjActions.createStartIntent(id, configuration, getReactApplicationContext());
-
+        Log.d(TAG, "[PjSipModule] start intent"+intent);
         getReactApplicationContext().startService(intent);
+        Log.d(TAG, "[PjSipModule] startService called");
     }
 
     @ReactMethod
