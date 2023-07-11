@@ -169,7 +169,7 @@ public class PjSipService extends Service {
             if (mServiceConfiguration.isUserAgentNotEmpty()) {
                 epConfig.getUaConfig().setUserAgent(mServiceConfiguration.getUserAgent());
             } else {
-                epConfig.getUaConfig().setUserAgent("ConnectSmart Android lib 5.0.10");
+                epConfig.getUaConfig().setUserAgent("CobhamSatcom Android lib 5.0.10");
             }
 
             if (mServiceConfiguration.isStunServersNotEmpty()) {

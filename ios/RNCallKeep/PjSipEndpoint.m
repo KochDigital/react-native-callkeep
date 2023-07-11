@@ -42,7 +42,7 @@
         pjsua_config cfg;
         pjsua_config_default(&cfg);
 
-        cfg.user_agent = pj_str("ConnectSmart iOS lib 5.0.10");
+        cfg.user_agent = pj_str("CobhamSatcom iOS lib 5.0.10");
         // cfg.cb.on_reg_state = [self performSelector:@selector(onRegState:) withObject: o];
         cfg.cb.on_reg_state = &onRegStateChanged;
         cfg.cb.on_incoming_call = &onCallReceived;
