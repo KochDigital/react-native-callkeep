@@ -133,6 +133,7 @@ public class PjSipService extends Service {
 
     private void load() {
         // Load native libraries
+        // TODO: Uffe: why is this removed?
         // try {
         //     System.loadLibrary("openh264");
         // } catch (UnsatisfiedLinkError error) {
@@ -151,9 +152,10 @@ public class PjSipService extends Service {
         try {
             mEndpoint = new Endpoint();
             mEndpoint.libCreate();
-            StringVector servers = new StringVector();
-            servers.add("stun.l.google.com:19302");
-            mEndpoint.natUpdateStunServers(servers, true);
+            //Uffe: we do not want hardwiring
+            // StringVector servers = new StringVector();
+            // servers.add("stun.l.google.com:19302");
+            // mEndpoint.natUpdateStunServers(servers, true);
 
             // Configure endpoint
             EpConfig epConfig = new EpConfig();
