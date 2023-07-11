@@ -299,6 +299,7 @@ public class PjSipService extends Service {
 
         try {
             startForeground(FOREGROUND_SERVICE_ID, notification);
+            Log.d(TAG, "[PjSipService] Starting foreground service: startForeground called successfully");
         } catch (Exception e) {
             Log.w(TAG, "[PjSipService] Can't start foreground service : " + e.toString());
         }
@@ -308,6 +309,7 @@ public class PjSipService extends Service {
         Log.d(TAG, "[PjSipService] stopForegroundService");
         try {
             stopForeground(STOP_FOREGROUND_REMOVE);
+            Log.d(TAG, "[PjSipService] Stopping foreground service: stopForeground called successfully");
         } catch (Exception e) {
             Log.w(TAG, "[PjSipService] can't stop foreground service :" + e.toString());
         }
