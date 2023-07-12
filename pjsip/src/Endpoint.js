@@ -605,7 +605,6 @@ export default class Endpoint extends EventEmitter {
          * @property {Account} account
          */
     this.emit('registration_changed', new Account(data))
-    console.log('PJSIP: Registration changed')
   }
 
   /**
