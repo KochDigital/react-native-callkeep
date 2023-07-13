@@ -107,4 +107,5 @@ export const listeners = {
   silenceIncomingCall,
   createIncomingConnectionFailed,
   didChangeAudioRoute,
+  didSendTimeout,
 };

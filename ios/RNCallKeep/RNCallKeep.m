@@ -7,7 +7,6 @@
 //
 
 #import "RNCallKeep.h"
-#import "ToneGenerator.h"
 
 #import <React/RCTBridge.h>
 #import <React/RCTConvert.h>
@@ -16,6 +15,7 @@
 #import <React/RCTLog.h>
 
 #import <AVFoundation/AVAudioSession.h>
+#import <AudioToolbox/AudioToolbox.h>
 #import <CallKit/CallKit.h>
 
 #ifdef DEBUG
@@ -542,9 +542,43 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     }
 }
 
-RCT_EXPORT_METHOD(startTone:(NSString *)dtmf) {
-    NSInteger tone = getTone(dtmf);
-  startTone((int)tone, 5000);
+RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
+    if([dtmfString  isEqual: @"0"]) {
+        AudioServicesPlaySystemSound(1200);
+    }
+    if([dtmfString  isEqual: @"1"]) {
+        AudioServicesPlaySystemSound(1201);
+    }
+    if([dtmfString  isEqual: @"2"]) {
+        AudioServicesPlaySystemSound(1202);
+    }
+    if([dtmfString  isEqual: @"3"]) {
+        AudioServicesPlaySystemSound(1203);
+    }
+    if([dtmfString  isEqual: @"4"]) {
+        AudioServicesPlaySystemSound(1204);
+    }
+    if([dtmfString  isEqual: @"5"]) {
+        AudioServicesPlaySystemSound(1205);
+    }
+    if([dtmfString  isEqual: @"6"]) {
+        AudioServicesPlaySystemSound(1206);
+    }
+    if([dtmfString  isEqual: @"7"]) {
+        AudioServicesPlaySystemSound(1207);
+    }
+    if([dtmfString  isEqual: @"8"]) {
+        AudioServicesPlaySystemSound(1208);
+    }
+    if([dtmfString  isEqual: @"9"]) {
+        AudioServicesPlaySystemSound(1209);
+    }
+    if([dtmfString  isEqual: @"*"]) {
+        AudioServicesPlaySystemSound(1210);
+    }
+    if([dtmfString  isEqual: @"#"]) {
+        AudioServicesPlaySystemSound(1211);
+    }
 }
 
 RCT_EXPORT_METHOD(playTone:(NSString *)dtmf durationMs:(NSInteger)duration) {

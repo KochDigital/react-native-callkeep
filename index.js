@@ -382,6 +382,10 @@ class RNCallKeep {
 
     RNCallKeepModule.dismissCallNotification(uuid);
   }
+
+  startTone(tone) {
+    RNCallKeepModule.startTone(tone);
+  }
 }
 
 export default new RNCallKeep();

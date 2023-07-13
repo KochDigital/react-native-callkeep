@@ -250,5 +250,7 @@ declare module '@aldiand/react-native-callkeep' {
     static setCurrentCallActive(callUUID: string): void
 
     static backToForeground(): void
+
+    static startTone(tone: string): void
   }
 }
