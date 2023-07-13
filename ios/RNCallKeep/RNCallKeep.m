@@ -581,15 +581,6 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
     }
 }
 
-RCT_EXPORT_METHOD(playTone:(NSString *)dtmf durationMs:(NSInteger)duration) {
-    NSInteger tone = getTone(dtmf);
-  startTone((int)tone, (int)duration);
-}
-
-RCT_EXPORT_METHOD(stopTone) {
-  stopTone();
-}
-
 + (NSMutableArray *) formatAudioInputs: (NSMutableArray *)inputs
 {
     NSMutableArray *newInputs = [NSMutableArray new];
