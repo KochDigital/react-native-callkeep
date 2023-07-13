@@ -40,27 +40,6 @@ static NSString *const RNCallKeepDidChangeAudioRoute = @"RNCallKeepDidChangeAudi
 static NSString *const RNCallKeepDidLoadWithEvents = @"RNCallKeepDidLoadWithEvents";
 static NSString *const RNCallKeepDidSendTimeout = @"RNCallKeepDidSendTimeout";
 
-static NSDictionary* dtmfTones = @{
-    @"1": [NSNumber numberWithInteger:DTMF_1],
-    @"2": [NSNumber numberWithInteger:DTMF_2],
-    @"3": [NSNumber numberWithInteger:DTMF_3],
-    @"4": [NSNumber numberWithInteger:DTMF_4],
-    @"5": [NSNumber numberWithInteger:DTMF_5],
-    @"6": [NSNumber numberWithInteger:DTMF_6],
-    @"7": [NSNumber numberWithInteger:DTMF_7],
-    @"8": [NSNumber numberWithInteger:DTMF_8],
-    @"9": [NSNumber numberWithInteger:DTMF_9],
-    @"0": [NSNumber numberWithInteger:DTMF_0],
-    @"S": [NSNumber numberWithInteger:DTMF_S],
-    @"*": [NSNumber numberWithInteger:DTMF_S],
-    @"P": [NSNumber numberWithInteger:DTMF_P],
-    @"#": [NSNumber numberWithInteger:DTMF_P],
-    @"A": [NSNumber numberWithInteger:DTMF_A],
-    @"B": [NSNumber numberWithInteger:DTMF_B],
-    @"C": [NSNumber numberWithInteger:DTMF_C],
-    @"D": [NSNumber numberWithInteger:DTMF_D],
-}
-
 @implementation RNCallKeep
 {
     NSOperatingSystemVersion _version;
@@ -563,13 +542,13 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     }
 }
 
-RCT_EXPORT_METHOD(startTone:(NSString)dtmf) {
-    NSInteger tone = dtmfTones[dtmf];
+RCT_EXPORT_METHOD(startTone:(NSString *)dtmf) {
+    NSInteger tone = getTone(dtmf);
   startTone((int)tone, 5000);
 }
 
-RCT_EXPORT_METHOD(playTone:(NSInteger)dtmf durationMs:(NSInteger)duration) {
-    NSInteger tone = dtmfTones[dtmf];
+RCT_EXPORT_METHOD(playTone:(NSString *)dtmf durationMs:(NSInteger)duration) {
+    NSInteger tone = getTone(dtmf);
   startTone((int)tone, (int)duration);
 }
 
