@@ -54,6 +54,9 @@ import android.telecom.TelecomManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import android.media.ToneGenerator;
+import android.media.AudioManager;
+
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Dynamic;
 import com.facebook.react.bridge.Promise;
@@ -132,6 +135,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     private static WritableMap _settings;
     private WritableNativeArray delayedEvents;
     private boolean hasListeners = false;
+
+    private ToneGenerator mToneGenerator= new ToneGenerator(
+        AudioManager.STREAM_DTMF,
+        ToneGenerator.MAX_VOLUME / 2
+      );
 
     public static RNCallKeepModule getInstance(ReactApplicationContext reactContext, boolean realContext) {
         if (instance == null) {
@@ -987,6 +995,23 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
         LocalBroadcastManager.getInstance(reactContext).sendBroadcast(intent);
     }
 
+    @ReactMethod
+    public void playTone(String stringTone, int duration) {
+        int tone = getDtmfCodeFromString(stringTone);
+      mToneGenerator.startTone(tone, duration);
+    }
+  
+    @ReactMethod
+    public void startTone(String stringTone) {
+        int tone = getDtmfCodeFromString(stringTone);
+      mToneGenerator.startTone(tone, 5000);
+    }
+  
+    @ReactMethod
+    public void stopTone() {
+      mToneGenerator.stopTone();
+    }
+
     public static void onRequestPermissionsResult(int requestCode, String[] grantedPermissions, int[] grantResults) {
         int permissionsIndex = 0;
         List<String> permsList = Arrays.asList(permissions);
@@ -1167,6 +1192,49 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
                 _settings = MapUtils.convertJsonToMap(jsonObject);
             }
         } catch(JSONException e) {
+        }
+    }
+
+    private int getDtmfCodeFromString(String dtmfString) {
+        switch(dtmfString) {
+            case "0":
+                return ToneGenerator.TONE_DTMF_0;
+            case "1":
+                return ToneGenerator.TONE_DTMF_1;
+            case "2":
+                return ToneGenerator.TONE_DTMF_2;
+            case "3":
+                return ToneGenerator.TONE_DTMF_3;
+            case "4":
+                return ToneGenerator.TONE_DTMF_4;
+            case "5":
+                return ToneGenerator.TONE_DTMF_5;
+            case "6":
+                return ToneGenerator.TONE_DTMF_6;
+            case "7":
+                return ToneGenerator.TONE_DTMF_7;
+            case "8":
+                return ToneGenerator.TONE_DTMF_8;
+            case "9":
+                return ToneGenerator.TONE_DTMF_9;
+            case "*":
+                return ToneGenerator.TONE_DTMF_S;
+            case "#":
+                return ToneGenerator.TONE_DTMF_P;
+            case "S":
+                return ToneGenerator.TONE_DTMF_S;
+            case "P":
+                return ToneGenerator.TONE_DTMF_P;
+            case "A":
+                return ToneGenerator.TONE_DTMF_A;
+            case "B":
+                return ToneGenerator.TONE_DTMF_B;
+            case "C":
+                return ToneGenerator.TONE_DTMF_C;
+            case "D":
+                return ToneGenerator.TONE_DTMF_D;
+            default:
+                return Integer.parseInt(dtmfString);
         }
     }
 
