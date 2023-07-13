@@ -996,22 +996,11 @@ public class RNCallKeepModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void playTone(String stringTone, int duration) {
-        int tone = getDtmfCodeFromString(stringTone);
-      mToneGenerator.startTone(tone, duration);
-    }
-  
-    @ReactMethod
     public void startTone(String stringTone) {
         int tone = getDtmfCodeFromString(stringTone);
-      mToneGenerator.startTone(tone, 5000);
+      mToneGenerator.startTone(tone, 300);
     }
   
-    @ReactMethod
-    public void stopTone() {
-      mToneGenerator.stopTone();
-    }
-
     public static void onRequestPermissionsResult(int requestCode, String[] grantedPermissions, int[] grantResults) {
         int permissionsIndex = 0;
         List<String> permsList = Arrays.asList(permissions);
