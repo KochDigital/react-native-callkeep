@@ -19,6 +19,58 @@ static double samplePosInSine, samplePosInSine_2nd;
 const float M_2PI = 3.14159265358979323846f * 2;
 
 //void startTone(int dtmf) {
+int getTone(NSString* dtmfString) {
+    if([dtmfString  isEqual: @"0"]) {
+        return DTMF_0;
+    }
+    if([dtmfString  isEqual: @"1"]) {
+        return DTMF_1;
+    }
+    if([dtmfString  isEqual: @"2"]) {
+        return DTMF_2;
+    }
+    if([dtmfString  isEqual: @"3"]) {
+        return DTMF_3;
+    }
+    if([dtmfString  isEqual: @"4"]) {
+        return DTMF_4;
+    }
+    if([dtmfString  isEqual: @"5"]) {
+        return DTMF_5;
+    }
+    if([dtmfString  isEqual: @"6"]) {
+        return DTMF_6;
+    }
+    if([dtmfString  isEqual: @"7"]) {
+        return DTMF_7;
+    }
+    if([dtmfString  isEqual: @"8"]) {
+        return DTMF_8;
+    }
+    if([dtmfString  isEqual: @"9"]) {
+        return DTMF_9;
+    }
+    if([dtmfString  isEqual: @"*"]) {
+        return DTMF_S;
+    }
+    if([dtmfString  isEqual: @"#"]) {
+        return DTMF_P;
+    }
+    if([dtmfString  isEqual: @"A"]) {
+        return DTMF_A;
+    }
+    if([dtmfString  isEqual: @"B"]) {
+        return DTMF_B;
+    }
+    if([dtmfString  isEqual: @"C"]) {
+        return DTMF_C;
+    }
+    if([dtmfString  isEqual: @"D"]) {
+        return DTMF_D;
+    }
+    return 0;
+}
+
 void startTone(int dtmf, int durationMs) {
   // Create the audio unit as shown above
   initialize();

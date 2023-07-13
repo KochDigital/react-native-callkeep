@@ -20,6 +20,7 @@ OSStatus RenderTone(
                     UInt32 inNumberFrames,
                     AudioBufferList *ioData);
 
+int getTone(NSString* dtmfString);
 void initialize();
 //void startTone(int dtmf);
 void startTone(int dtmf, int duration);

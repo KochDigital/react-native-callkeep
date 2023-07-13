@@ -16,6 +16,7 @@ declare module '@aldiand/react-native-callkeep' {
     checkReachability: 'RNCallKeepCheckReachability';
     didResetProvider: 'RNCallKeepProviderReset';
     didLoadWithEvents: 'RNCallKeepDidLoadWithEvents';
+    didSendTimeout: 'RNCallKeepDidSendTimeout';
   }
 
   export type InitialEvents = Array<{
@@ -54,6 +55,7 @@ declare module '@aldiand/react-native-callkeep' {
     checkReachability: undefined;
     didResetProvider: undefined;
     didLoadWithEvents: InitialEvents;
+    didSendTimeout: { callUUID: string };
   }
 
   type HandleType = 'generic' | 'number' | 'email';
