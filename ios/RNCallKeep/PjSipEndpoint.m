@@ -113,6 +113,8 @@
     status = pjsua_start();
     if (status != PJ_SUCCESS) NSLog(@"Error starting pjsua");
     
+    self.ringback = [[PjSipRingback alloc] init];
+    
     return self;
 }
 
@@ -384,7 +386,15 @@ static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
     
     [call onStateChanged:callInfo];
     
-    if (callInfo.state == PJSIP_INV_STATE_DISCONNECTED) {
+    if (callInfo.state == PJSIP_INV_STATE_EARLY) {
+        if(!call.isIncoming && [[endpoint.calls allKeys] count] == 1) {
+            [endpoint.ringback start];
+        }
+    } else if (callInfo.state == PJSIP_INV_STATE_CONFIRMED) {
+        if(endpoint.ringback.isPlaying) {
+            [endpoint.ringback stop];
+        }
+    } else if (callInfo.state == PJSIP_INV_STATE_DISCONNECTED) {
         [endpoint.calls removeObjectForKey:@(callId)];
         [endpoint emmitCallTerminated:call];
     } else {

@@ -4,6 +4,7 @@
 #import "PjSipAccount.h"
 #import "PjSipCall.h"
 #import "PjSipModule.h"
+#import "PjSipRingback.h"
 
 
 @interface PjSipEndpoint : NSObject
@@ -11,6 +12,8 @@
 @property NSMutableDictionary* accounts;
 @property NSMutableDictionary* calls;
 @property(nonatomic, strong) PjSipModule *bridge;
+@property (strong, nonatomic) PjSipRingback *ringback;
+
 
 @property pjsua_transport_id tcpTransportId;
 @property pjsua_transport_id udpTransportId;
@@ -18,7 +21,7 @@
 
 @property bool isSpeaker;
   
-@property (readonly) pj_pool_t * _Nullable pjPool;
+@property pj_pool_t * _Nullable pjPool;
 
 +(instancetype)instance;
 

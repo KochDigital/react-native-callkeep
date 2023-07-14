@@ -4,9 +4,6 @@
 //
 
 #import "PjSipRingback.h"
-
-#import "Constants.h"
-#import "NSString+PJString.h"
 #import <VialerPJSIP/pjsua.h>
 #import "PjSipEndpoint.h"
 
@@ -30,17 +27,16 @@ static int const PjSipRingbackInterval = 4000;
         return nil;
     }
 
-    PjSipEndpoint *endpoint = [PjSipEndpoint instance];
-
     pj_status_t status;
     pjmedia_tone_desc tone[PjSipRingbackRingbackCount];
     pj_str_t name = pj_str("tone");
+    pj_pool_t *pool = pjsua_pool_create("pjsip-ringback", 1000, 1000);
 
     //TODO make ptime and channel count not constant?
 
     NSUInteger samplesPerFrame = (PJSUA_DEFAULT_AUDIO_FRAME_PTIME * 16000 * PjSipRingbackChannelCount) / 1000;
 
-    status = pjmedia_tonegen_create2(endpoint.pjPool, &name, (unsigned int)16000, PjSipRingbackChannelCount, (unsigned int)samplesPerFrame, 16, PJMEDIA_TONEGEN_LOOP, &_ringbackPort);
+    status = pjmedia_tonegen_create2(pool, &name, (unsigned int)16000, PjSipRingbackChannelCount, (unsigned int)samplesPerFrame, 16, PJMEDIA_TONEGEN_LOOP, &_ringbackPort);
 
     if (status != PJ_SUCCESS) {
         char statusmsg[PJ_ERR_MSG_SIZE];
@@ -62,7 +58,7 @@ static int const PjSipRingbackInterval = 4000;
 
     pjmedia_tonegen_play(self.ringbackPort, PjSipRingbackRingbackCount, tone, PJMEDIA_TONEGEN_LOOP);
 
-    status = pjsua_conf_add_port(endpoint.pjPool, [self ringbackPort], (int *)&_ringbackSlot);
+    status = pjsua_conf_add_port(pool, [self ringbackPort], (int *)&_ringbackSlot);
 
     if (status != PJ_SUCCESS) {
         char statusmsg[PJ_ERR_MSG_SIZE];
@@ -88,7 +84,7 @@ static int const PjSipRingbackInterval = 4000;
 }
 
 -(void)start {
-    PjSipLogInfo(@"Start ringback, isPlaying: %@", self.isPlaying ? @"YES" : @"NO");
+    NSLog(@"Start ringback, isPlaying: %@", self.isPlaying ? @"YES" : @"NO");
     if (!self.isPlaying) {
         pjsua_conf_connect((int)self.ringbackSlot, 0);
         self.isPlaying = YES;
@@ -96,7 +92,7 @@ static int const PjSipRingbackInterval = 4000;
 }
 
 -(void)stop {
-    PjSipLogInfo(@"Stop ringback, isPlaying: %@", self.isPlaying ? @"YES" : @"NO");
+    NSLog(@"Stop ringback, isPlaying: %@", self.isPlaying ? @"YES" : @"NO");
     if (self.isPlaying) {
         pjsua_conf_disconnect((int)self.ringbackSlot, 0);
         self.isPlaying = NO;

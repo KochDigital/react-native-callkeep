@@ -142,7 +142,9 @@
 #pragma mark - Callback methods
 
 - (void)onStateChanged:(pjsua_call_info)info {
-    // Ignore
+    if(info.state == PJSIP_INV_STATE_INCOMING) {
+        self.isIncoming = YES;
+    }
 }
 
 /**
