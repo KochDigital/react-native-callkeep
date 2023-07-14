@@ -395,6 +395,9 @@ static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
             [endpoint.ringback stop];
         }
     } else if (callInfo.state == PJSIP_INV_STATE_DISCONNECTED) {
+        if(endpoint.ringback.isPlaying) {
+            [endpoint.ringback stop];
+        }
         [endpoint.calls removeObjectForKey:@(callId)];
         [endpoint emmitCallTerminated:call];
     } else {
