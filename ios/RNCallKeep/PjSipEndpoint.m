@@ -151,9 +151,9 @@
     }
     
     pjsua_acc_config cfg_update;
-    pj_pool_t *pool = pjsua_pool_create("tmp-pjsua", 1000, 1000);
+    self.pjPool = pjsua_pool_create("tmp-pjsua", 1000, 1000);
     pjsua_acc_config_default(&cfg_update);
-    pjsua_acc_get_config(accountId, pool, &cfg_update);
+    pjsua_acc_get_config(accountId, self.pjPool, &cfg_update);
     pjsua_update_stun_servers(size, srv, false);
     
     pjsua_acc_modify(accountId, &cfg_update);

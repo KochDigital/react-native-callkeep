@@ -17,6 +17,8 @@
 @property pjsua_transport_id tlsTransportId;
 
 @property bool isSpeaker;
+  
+@property (readonly) pj_pool_t * _Nullable pjPool;
 
 +(instancetype)instance;
 
