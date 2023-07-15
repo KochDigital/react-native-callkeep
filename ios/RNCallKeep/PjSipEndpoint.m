@@ -386,6 +386,16 @@ static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
     
     [call onStateChanged:callInfo];
     
+    if (callInfo.state == PJSIP_INV_STATE_DISCONNECTED) {
+        if(endpoint.ringback.isPlaying) {
+            [endpoint.ringback stop];
+        }
+        [endpoint.calls removeObjectForKey:@(callId)];
+        [endpoint emmitCallTerminated:call];
+    }
+    
+    [endpoint emmitCallChanged:call];
+    
     if (callInfo.state == PJSIP_INV_STATE_EARLY) {
         if(!call.isIncoming && [[endpoint.calls allKeys] count] == 1) {
             [endpoint.ringback start];
@@ -400,9 +410,8 @@ static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
         }
         [endpoint.calls removeObjectForKey:@(callId)];
         [endpoint emmitCallTerminated:call];
-    } else {
-        [endpoint emmitCallChanged:call];
     }
+    
 }
 
 static void onCallMediaStateChanged(pjsua_call_id callId) {

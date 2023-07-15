@@ -986,8 +986,11 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
 }
 
 - (void)startTimerFor:(NSString *)uuidString {
-    [self performSelector:@selector(onTick:) withObject:nil afterDelay:60.0];
+    [self performSelector:@selector(sendTimeoutForUuid:) withObject:uuidString afterDelay:60.0];
     
+}
+
+- (void)sendTimeoutForUuid:(NSString *)uuidString {
     [self sendEventWithNameWrapper:RNCallKeepDidSendTimeout body:@{ @"callUUID": uuidString }];
 }
 
