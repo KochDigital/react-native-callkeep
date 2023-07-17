@@ -116,6 +116,7 @@
     
     self.ringback = [[PjSipRingback alloc] init];
     self.audioController = [[PjSipAudioController alloc] init];
+    self.endedCallIds = [[PjSipCustomStringArray alloc] initWithCapacity:5];
     
     return self;
 }
@@ -417,7 +418,9 @@ static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
         if(endpoint.ringback.isPlaying) {
             [endpoint.ringback stop];
         }
+        
         [endpoint.calls removeObjectForKey:@(callId)];
+        [endpoint.endedCallIds push:call.callId];
         [endpoint emmitCallTerminated:call];
     }
     

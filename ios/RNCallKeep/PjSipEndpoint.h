@@ -6,12 +6,14 @@
 #import "PjSipModule.h"
 #import "PjSipRingback.h"
 #import "PjSipAudioController.h"
+#import "PjSipCustomStringArray.h"
 
 
 @interface PjSipEndpoint : NSObject
 
 @property NSMutableDictionary* accounts;
 @property NSMutableDictionary* calls;
+@property PjSipCustomStringArray* endedCallIds;
 @property(nonatomic, strong) PjSipModule *bridge;
 @property (strong, nonatomic) PjSipRingback *ringback;
 @property (strong, nonatomic) PjSipAudioController * audioController;

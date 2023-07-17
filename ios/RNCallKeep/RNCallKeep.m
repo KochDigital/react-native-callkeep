@@ -663,16 +663,15 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
     callUpdate.hasVideo = hasVideo;
     callUpdate.localizedCallerName = localizedCallerName;
     
-//    PjSipCall *call = [[PjSipEndpoint instance] findCallWithUuid:uuidString];
-//
-//    if(call != nil) {
-//        NSDictionary * info = [call toJsonDictionary:true];
-//        callUpdate.remoteHandle = [[CXHandle alloc] initWithType:_handleType value:info];
-//    }
-
     [RNCallKeep initCallKitProvider];
     [sharedProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
         RNCallKeep *callKeep = [RNCallKeep allocWithZone: nil];
+        
+        if([[[PjSipEndpoint instance] endedCallIds] containsString:uuidString]) {
+            [sharedProvider reportCallWithUUID:uuid endedAtDate:[NSDate date] reason:CXCallEndedReasonDeclinedElsewhere];
+            return;
+        }
+        
         [callKeep sendEventWithNameWrapper:RNCallKeepDidDisplayIncomingCall body:@{
             @"error": error && error.localizedDescription ? error.localizedDescription : @"",
             @"errorCode": error ? [callKeep getIncomingCallErrorCode:error] : @"",
@@ -829,7 +828,7 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
 }
 
 - (void)startTimerFor:(NSString *)uuidString {
-    [self performSelector:@selector(sendTimeoutForUuid:) withObject:uuidString afterDelay:20.0];
+    [self performSelector:@selector(sendTimeoutForUuid:) withObject:uuidString afterDelay:30.0];
     
 }
 
