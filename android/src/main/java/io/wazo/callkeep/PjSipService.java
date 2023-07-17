@@ -167,7 +167,7 @@ public class PjSipService extends Service {
             if (mServiceConfiguration.isUserAgentNotEmpty()) {
                 epConfig.getUaConfig().setUserAgent(mServiceConfiguration.getUserAgent());
             } else {
-                epConfig.getUaConfig().setUserAgent("ConnectSmart Android lib 5.3.0");
+                epConfig.getUaConfig().setUserAgent("ConnectSmart Android lib 5.3.2");
             }
 
             if (mServiceConfiguration.isStunServersNotEmpty()) {

@@ -43,7 +43,7 @@
         pjsua_config cfg;
         pjsua_config_default(&cfg);
 
-        cfg.user_agent = pj_str("ConnectSmart iOS lib 5.3.0");
+        cfg.user_agent = pj_str("ConnectSmart iOS lib 5.3.2");
         // cfg.cb.on_reg_state = [self performSelector:@selector(onRegState:) withObject: o];
         cfg.cb.on_reg_state = &onRegStateChanged;
         cfg.cb.on_incoming_call = &onCallReceived;
@@ -220,6 +220,7 @@
     pj_pool_release(pool);
     
     PjSipCall *call = [PjSipCall itemConfig:callId];
+    call.isIncoming = false;
     self.calls[@(callId)] = call;
     
     return call;
@@ -419,8 +420,11 @@ static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
             [endpoint.ringback stop];
         }
         
+        if(call.isIncoming) {
+            [endpoint.endedCallIds push:call.callId];
+        }
+        
         [endpoint.calls removeObjectForKey:@(callId)];
-        [endpoint.endedCallIds push:call.callId];
         [endpoint emmitCallTerminated:call];
     }
     
