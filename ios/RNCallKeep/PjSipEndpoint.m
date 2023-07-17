@@ -10,6 +10,7 @@
 #import "PjSipEndpoint.h"
 #import "PjSipMessage.h"
 #import "PjSipModule.h"
+#import "RNCallKeep.h"
 
 @implementation PjSipEndpoint
 
@@ -42,7 +43,7 @@
         pjsua_config cfg;
         pjsua_config_default(&cfg);
 
-        cfg.user_agent = pj_str("ConnectSmart iOS lib 5.0.10");
+        cfg.user_agent = pj_str("ConnectSmart iOS lib 5.3.0");
         // cfg.cb.on_reg_state = [self performSelector:@selector(onRegState:) withObject: o];
         cfg.cb.on_reg_state = &onRegStateChanged;
         cfg.cb.on_incoming_call = &onCallReceived;
@@ -114,6 +115,7 @@
     if (status != PJ_SUCCESS) NSLog(@"Error starting pjsua");
     
     self.ringback = [[PjSipRingback alloc] init];
+    self.audioController = [[PjSipAudioController alloc] init];
     
     return self;
 }
@@ -188,6 +190,7 @@
 #pragma mark Calls
 
 -(PjSipCall *) makeCall:(PjSipAccount *) account destination:(NSString *)destination callSettings: (NSDictionary *)callSettingsDict msgData: (NSDictionary *)msgDataDict {
+    NSLog(@"PjSipEndpoint makecall: %@", destination);
     pjsua_call_setting callSettings;
     [PjSipUtil fillCallSettings:&callSettings dict:callSettingsDict];
     
@@ -205,7 +208,8 @@
     pjsua_call_id callId;
     pj_str_t callDest = pj_str((char *) [destination UTF8String]);
     
-    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
+    [[self audioController] configureAudioSession];
+    NSLog(@"PjSipEndpoint configureAudioSession");
     
     pj_status_t status = pjsua_call_make_call(account.id, &callDest, &callSettings, NULL, &msgData, &callId);
     
@@ -222,6 +226,17 @@
 
 - (PjSipCall *) findCall: (int) callId {
     return self.calls[@(callId)];
+}
+
+-(PjSipCall *)findCallWithUuid:(NSString *)callUuid {
+    for (NSString *key in self.calls) {
+        PjSipCall *call = self.calls[key];
+        
+        if ([call.callId isEqual:callUuid]) {
+            return call;
+        }
+    }
+    return nil;
 }
 
 -(void) pauseParallelCalls:(PjSipCall*) call {
@@ -242,8 +257,7 @@
 -(void)useSpeaker {
     self.isSpeaker = true;
     
-    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    [audioSession overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:nil];
+    [self.audioController setOutput:PjSipAudioControllerOutputSpeaker];
     
     for (NSString *key in self.calls) {
         PjSipCall *call = self.calls[key];
@@ -254,8 +268,7 @@
 -(void)useEarpiece {
     self.isSpeaker = false;
     
-    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    [audioSession overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:nil];
+    [self.audioController setOutput:PjSipAudioControllerOutputOther];
     
     for (NSString *key in self.calls) {
         PjSipCall *call = self.calls[key];
@@ -369,6 +382,20 @@ static void onCallReceived(pjsua_acc_id accId, pjsua_call_id callId, pjsip_rx_da
     [endpoint assignCall:call callId:callId];
     
     [endpoint emmitCallReceived:call];
+    
+    [RNCallKeep reportNewIncomingCall: call.callId
+                               handle: @"Connecting..."
+                           handleType: @"number"
+                             hasVideo: NO
+                  localizedCallerName: @""
+                      supportsHolding: YES
+                         supportsDTMF: YES
+                     supportsGrouping: YES
+                   supportsUngrouping: YES
+                          fromPushKit: NO
+                              payload: nil
+                withCompletionHandler: nil];
+    
     pjsua_call_answer(callId, 180, NULL, NULL);
 }
 
@@ -397,6 +424,28 @@ static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
     [endpoint emmitCallChanged:call];
     
     if (callInfo.state == PJSIP_INV_STATE_EARLY) {
+        if(call.isIncoming) {
+            NSString * remoteName = nil;
+            NSString * remoteNumber = nil;
+            
+            [PjSipUtil parseSIPURI:[PjSipUtil toString:&callInfo.remote_info] intoName:&remoteName andNumber:&remoteNumber];
+            
+            NSString *receiver = (remoteName != nil) ? remoteName : remoteNumber;
+
+            [RNCallKeep reportNewIncomingCall: call.callId
+                                       handle: receiver
+                                   handleType: @"number"
+                                     hasVideo: NO
+                          localizedCallerName: @""
+                              supportsHolding: YES
+                                 supportsDTMF: YES
+                             supportsGrouping: YES
+                           supportsUngrouping: YES
+                                  fromPushKit: NO
+                                      payload: nil
+                        withCompletionHandler: nil];
+        }
+        
         if(!call.isIncoming && [[endpoint.calls allKeys] count] == 1) {
             [endpoint.ringback start];
         }

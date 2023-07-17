@@ -14,9 +14,10 @@
 #import <React/RCTUtils.h>
 #import <React/RCTLog.h>
 
-#import <AVFoundation/AVAudioSession.h>
 #import <AudioToolbox/AudioToolbox.h>
 #import <CallKit/CallKit.h>
+
+#import "PjSipEndpoint.h"
 
 #ifdef DEBUG
 static int const OUTGOING_CALL_WAKEUP_DELAY = 10;
@@ -64,11 +65,7 @@ RCT_EXPORT_MODULE()
         _isStartCallActionEventListenerAdded = NO;
         _isReachable = NO;
         if (_delayedEvents == nil) _delayedEvents = [NSMutableArray array];
-
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(onAudioRouteChange:)
-                                                     name:AVAudioSessionRouteChangeNotification
-                                                   object:nil];
+        
         // Init provider directly, in case of an app killed and when we've already stored our settings
         [RNCallKeep initCallKitProvider];
 
@@ -136,22 +133,6 @@ RCT_EXPORT_MODULE()
 //    _hasListeners = FALSE;
 }
 
-- (void)onAudioRouteChange:(NSNotification *)notification
-{
-    NSDictionary *info = notification.userInfo;
-    NSInteger reason = [[info valueForKey:AVAudioSessionRouteChangeReasonKey] integerValue];
-    NSString *output = [RNCallKeep getAudioOutput];
-
-    if (output == nil) {
-        return;
-    }
-
-    [self sendEventWithName:RNCallKeepDidChangeAudioRoute body:@{
-        @"output": output,
-        @"reason": @(reason),
-    }];
-}
-
 - (void)sendEventWithNameWrapper:(NSString *)name body:(id)body {
     NSLog(@"[[RNCallKeep]] sendEventWithNameWrapper: %@, hasListeners : %@", name, _hasListeners ? @"YES": @"NO");
 
@@ -178,10 +159,6 @@ RCT_EXPORT_MODULE()
             sharedProvider = [[CXProvider alloc] initWithConfiguration:[RNCallKeep getProviderConfiguration:settings]];
         }
     }
-}
-
-+ (NSString *) getAudioOutput {
-    return [AVAudioSession sharedInstance].currentRoute.outputs.count > 0 ? [AVAudioSession sharedInstance].currentRoute.outputs[0].portType : nil;
 }
 
 + (void)setup:(NSDictionary *)options {
@@ -251,8 +228,9 @@ RCT_REMAP_METHOD(checkSpeaker,
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][checkSpeaker]");
 #endif
-    NSString *output = [RNCallKeep getAudioOutput];
-    resolve(@([output isEqualToString:@"Speaker"]));
+    PjSipAudioControllerOutputs *output = [[[PjSipEndpoint instance]audioController] output];
+    bool isSpeaker = output == PjSipAudioControllerOutputSpeaker;
+    resolve(@(isSpeaker));
 }
 
 #pragma mark - CXCallController call actions
@@ -496,27 +474,9 @@ RCT_EXPORT_METHOD(setAudioRoute: (NSString *)uuid
     NSLog(@"[RNCallKeep][setAudioRoute] - inputName: %@", inputName);
 #endif
     @try {
-        NSError* err = nil;
-        AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
-        if ([inputName isEqualToString:@"Speaker"]) {
-            BOOL isOverrided = [myAudioSession overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:&err];
-            if(!isOverrided){
-                [NSException raise:@"overrideOutputAudioPort failed" format:@"error: %@", err];
-            }
-            resolve(@"Speaker");
-            return;
-        }
-
-        NSArray *ports = [RNCallKeep getAudioInputs];
-        for (AVAudioSessionPortDescription *port in ports) {
-            if ([port.portName isEqualToString:inputName]) {
-                BOOL isSetted = [myAudioSession setPreferredInput:(AVAudioSessionPortDescription *)port error:&err];
-                if(!isSetted){
-                    [NSException raise:@"setPreferredInput failed" format:@"error: %@", err];
-                }
-                resolve(inputName);
-                return;
-            }
+        bool *status = [[[PjSipEndpoint instance] audioController] setAudioRoute:inputName];
+        if(status) {
+            resolve(inputName);
         }
     }
     @catch ( NSException *e ){
@@ -532,9 +492,8 @@ RCT_EXPORT_METHOD(getAudioRoutes: (RCTPromiseResolveBlock)resolve
     NSLog(@"[RNCallKeep][getAudioRoutes]");
 #endif
     @try {
-        NSArray *inputs = [RNCallKeep getAudioInputs];
-        NSMutableArray *formatedInputs = [RNCallKeep formatAudioInputs: inputs];
-        resolve(formatedInputs);
+        NSArray *inputs = [[[PjSipEndpoint instance] audioController] getAudioInputs];
+        resolve(inputs);
     }
     @catch ( NSException *e ) {
         NSLog(@"[RNCallKeep][getAudioRoutes] exception: %@",e);
@@ -579,111 +538,6 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
     if([dtmfString  isEqual: @"#"]) {
         AudioServicesPlaySystemSound(1211);
     }
-}
-
-+ (NSMutableArray *) formatAudioInputs: (NSMutableArray *)inputs
-{
-    NSMutableArray *newInputs = [NSMutableArray new];
-    NSString * selected = [RNCallKeep getSelectedAudioRoute];
-    
-    NSMutableDictionary *speakerDict = [[NSMutableDictionary alloc]init];
-    [speakerDict setObject:@"Speaker" forKey:@"name"];
-    [speakerDict setObject:AVAudioSessionPortBuiltInSpeaker forKey:@"type"];
-    if(selected && [selected isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
-        [speakerDict setObject:@YES forKey:@"selected"];
-    }
-    [newInputs addObject:speakerDict];
-
-    for (AVAudioSessionPortDescription* input in inputs)
-    {
-        NSString *str = [NSString stringWithFormat:@"PORTS :\"%@\": UID:%@", input.portName, input.UID ];
-        NSMutableDictionary *dict = [[NSMutableDictionary alloc]init];
-        [dict setObject:input.portName forKey:@"name"];
-        NSString * type = [RNCallKeep getAudioInputType: input.portType];
-        if(type)
-        {
-            if([selected isEqualToString:type]){
-                [dict setObject:@YES forKey:@"selected"];
-            }
-            [dict setObject:type forKey:@"type"];
-            [newInputs addObject:dict];
-        }
-    }
-    return newInputs;
-}
-
-+ (NSArray *) getAudioInputs
-{
-    NSError* err = nil;
-    NSString *str = nil;
-
-    AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
-    NSString *category = [myAudioSession category];
-    NSUInteger options = [myAudioSession categoryOptions];
-
-
-    if(![category isEqualToString:AVAudioSessionCategoryPlayAndRecord] && (options != AVAudioSessionCategoryOptionAllowBluetooth) && (options !=AVAudioSessionCategoryOptionAllowBluetoothA2DP))
-    {
-        BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&err];
-        if (!isCategorySetted)
-        {
-            NSLog(@"setCategory failed");
-            [NSException raise:@"setCategory failed" format:@"error: %@", err];
-        }
-    }
-
-    BOOL isCategoryActivated = [myAudioSession setActive:YES error:&err];
-    if (!isCategoryActivated)
-    {
-        NSLog(@"[RNCallKeep][getAudioInputs] setActive failed");
-        [NSException raise:@"setActive failed" format:@"error: %@", err];
-    }
-
-    NSArray *inputs = [myAudioSession availableInputs];
-    return inputs;
-}
-
-+ (NSString *) getAudioInputType: (NSString *) type
-{
-    if ([type isEqualToString:AVAudioSessionPortBuiltInMic]){
-        return @"Phone";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortHeadsetMic]){
-        return @"Headset";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortHeadphones]){
-        return @"Headset";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortBluetoothHFP]){
-        return @"Bluetooth";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortBluetoothA2DP]){
-        return @"Bluetooth";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
-        return @"Speaker";
-    }
-    else if ([type isEqualToString:AVAudioSessionPortCarAudio]) {
-        return @"CarAudio";
-    }
-    else{
-        return nil;
-    }
-}
-
-+ (NSString *) getSelectedAudioRoute
-{
-    AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
-    AVAudioSessionRouteDescription *currentRoute = [myAudioSession currentRoute];
-    NSArray *selectedOutputs = currentRoute.outputs;
-    
-    AVAudioSessionPortDescription *selectedOutput = selectedOutputs[0];
-    
-    if(selectedOutput && [selectedOutput.portType isEqualToString:AVAudioSessionPortBuiltInReceiver]) {
-        return @"Phone";
-    }
-    
-    return [RNCallKeep getAudioInputType: selectedOutput.portType];
 }
 
 - (void)requestTransaction:(CXTransaction *)transaction
@@ -800,6 +654,7 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
     int _handleType = [RNCallKeep getHandleType:handleType];
     NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:uuidString];
     CXCallUpdate *callUpdate = [[CXCallUpdate alloc] init];
+    
     callUpdate.remoteHandle = [[CXHandle alloc] initWithType:_handleType value:handle];
     callUpdate.supportsHolding = supportsHolding;
     callUpdate.supportsDTMF = supportsDTMF;
@@ -807,6 +662,13 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
     callUpdate.supportsUngrouping = supportsUngrouping;
     callUpdate.hasVideo = hasVideo;
     callUpdate.localizedCallerName = localizedCallerName;
+    
+//    PjSipCall *call = [[PjSipEndpoint instance] findCallWithUuid:uuidString];
+//
+//    if(call != nil) {
+//        NSDictionary * info = [call toJsonDictionary:true];
+//        callUpdate.remoteHandle = [[CXHandle alloc] initWithType:_handleType value:info];
+//    }
 
     [RNCallKeep initCallKitProvider];
     [sharedProvider reportNewIncomingCallWithUUID:uuid update:callUpdate completion:^(NSError * _Nullable error) {
@@ -829,7 +691,7 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
         if (error == nil) {
             // Workaround per https://forums.developer.apple.com/message/169511
             if ([callKeep lessThanIos10_2]) {
-                [callKeep configureAudioSession];
+                [[[PjSipEndpoint instance] audioController] configureAudioSession];
             }
         }
         
@@ -914,7 +776,7 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
     NSLog(@"[RNCallKeep][getProviderConfiguration]");
 #endif
     CXProviderConfiguration *providerConfiguration = [[CXProviderConfiguration alloc] initWithLocalizedName:settings[@"appName"]];
-    providerConfiguration.supportsVideo = YES;
+    providerConfiguration.supportsVideo = FALSE;
     providerConfiguration.maximumCallGroups = 3;
     providerConfiguration.maximumCallsPerCallGroup = 1;
     providerConfiguration.supportedHandleTypes = [RNCallKeep getSupportedHandleTypes:settings[@"handleType"]];
@@ -942,25 +804,6 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
     return providerConfiguration;
 }
 
-- (void)configureAudioSession
-{
-#ifdef DEBUG
-    NSLog(@"[RNCallKeep][configureAudioSession] Activating audio session");
-#endif
-
-    AVAudioSession* audioSession = [AVAudioSession sharedInstance];
-    [audioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth | AVAudioSessionCategoryOptionAllowBluetoothA2DP error:nil];
-
-    [audioSession setMode:AVAudioSessionModeDefault error:nil];
-
-    double sampleRate = 44100.0;
-    [audioSession setPreferredSampleRate:sampleRate error:nil];
-
-    NSTimeInterval bufferDuration = .005;
-    [audioSession setPreferredIOBufferDuration:bufferDuration error:nil];
-    [audioSession setActive:TRUE error:nil];
-}
-
 + (BOOL)application:(UIApplication *)application
             openURL:(NSURL *)url
             options:(NSDictionary<UIApplicationOpenURLOptionsKey, id> *)options NS_AVAILABLE_IOS(9_0)
@@ -986,7 +829,7 @@ RCT_EXPORT_METHOD(startTone:(NSString *)dtmfString) {
 }
 
 - (void)startTimerFor:(NSString *)uuidString {
-    [self performSelector:@selector(sendTimeoutForUuid:) withObject:uuidString afterDelay:60.0];
+    [self performSelector:@selector(sendTimeoutForUuid:) withObject:uuidString afterDelay:20.0];
     
 }
 
@@ -1081,7 +924,7 @@ continueUserActivity:(NSUserActivity *)userActivity
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performStartCallAction]");
 #endif
     //do this first, audio sessions are flakey
-    [self configureAudioSession];
+    [[[PjSipEndpoint instance] audioController] configureAudioSession];
     //tell the JS to actually make the call
     [self sendEventWithNameWrapper:RNCallKeepDidReceiveStartCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString], @"handle": action.handle.value }];
     [action fulfill];
@@ -1107,7 +950,7 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:performAnswerCallAction]");
 #endif
-    [self configureAudioSession];
+    [[[PjSipEndpoint instance] audioController] configureAudioSession];
     [self sendEventWithNameWrapper:RNCallKeepPerformAnswerCallAction body:@{ @"callUUID": [action.callUUID.UUIDString lowercaseString] }];
     [action fulfill];
 }
@@ -1162,14 +1005,7 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:didActivateAudioSession]");
 #endif
-    NSDictionary *userInfo
-    = @{
-        AVAudioSessionInterruptionTypeKey: [NSNumber numberWithInt:AVAudioSessionInterruptionTypeEnded],
-        AVAudioSessionInterruptionOptionKey: [NSNumber numberWithInt:AVAudioSessionInterruptionOptionShouldResume]
-    };
-    [[NSNotificationCenter defaultCenter] postNotificationName:AVAudioSessionInterruptionNotification object:nil userInfo:userInfo];
-
-    [self configureAudioSession];
+    [[[PjSipEndpoint instance] audioController] activateAudioSession];
     [self sendEventWithNameWrapper:RNCallKeepDidActivateAudioSession body:nil];
 }
 
@@ -1178,6 +1014,7 @@ RCT_EXPORT_METHOD(reportUpdatedCall:(NSString *)uuidString contactIdentifier:(NS
 #ifdef DEBUG
     NSLog(@"[RNCallKeep][CXProviderDelegate][provider:didDeactivateAudioSession]");
 #endif
+    [[[PjSipEndpoint instance] audioController] deactivateAudioSession];
     [self sendEventWithNameWrapper:RNCallKeepDidDeactivateAudioSession body:nil];
 }
 

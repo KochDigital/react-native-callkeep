@@ -3,11 +3,10 @@
 //  Copyright © 2015 Devhouse Spindle. All rights reserved.
 //
 
-#import "PjSipAudioController.h"
-
 @import AVFoundation;
-#import "Constants.h"
-#import "PjSipLogging.h"
+
+#import "PjSipAudioController.h"
+#import <VialerPJSIP/pjsua.h>
 
 NSString * const PjSipAudioControllerAudioInterrupted = @"PjSipAudioControllerAudioInterrupted";
 NSString * const PjSipAudioControllerAudioResumed = @"PjSipAudioControllerAudioResumed";
@@ -119,6 +118,108 @@ NSString * const PjSipAudioControllerAudioResumed = @"PjSipAudioControllerAudioR
                                                     name:AVAudioSessionInterruptionNotification
                                                   object:nil];
 }
+
+- (bool)setAudioRoute: (NSString *) inputName {
+    @try {
+        NSError* err = nil;\
+        if ([inputName isEqualToString:@"Speaker"]) {
+            [self setOutput:PjSipAudioControllerOutputSpeaker];
+            return true;
+        }
+
+        AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
+        NSArray *ports = [self getAudioInputs];
+        for (AVAudioSessionPortDescription *port in ports) {
+            if ([port.portName isEqualToString:inputName]) {
+                BOOL isSetted = [myAudioSession setPreferredInput:(AVAudioSessionPortDescription *)port error:&err];
+                if(!isSetted){
+                    [NSException raise:@"setPreferredInput failed" format:@"error: %@", err];
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+    @catch ( NSException *e ){
+        NSLog(@"[PjSipAudioController][setAudioRoute] exception: %@",e);
+        return false;
+    }
+}
+
+- (NSArray *) getAudioInputs
+{
+    NSError* err = nil;
+    NSString *str = nil;
+
+    AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
+    NSString *category = [myAudioSession category];
+    NSUInteger options = [myAudioSession categoryOptions];
+
+
+    if(![category isEqualToString:AVAudioSessionCategoryPlayAndRecord] && (options != AVAudioSessionCategoryOptionAllowBluetooth) && (options !=AVAudioSessionCategoryOptionAllowBluetoothA2DP))
+    {
+        BOOL isCategorySetted = [myAudioSession setCategory:AVAudioSessionCategoryPlayAndRecord withOptions:AVAudioSessionCategoryOptionAllowBluetooth error:&err];
+        if (!isCategorySetted)
+        {
+            NSLog(@"setCategory failed");
+            [NSException raise:@"setCategory failed" format:@"error: %@", err];
+        }
+    }
+
+    BOOL isCategoryActivated = [myAudioSession setActive:YES error:&err];
+    if (!isCategoryActivated)
+    {
+        NSLog(@"[RNCallKeep][getAudioInputs] setActive failed");
+        [NSException raise:@"setActive failed" format:@"error: %@", err];
+    }
+
+    NSArray *inputs = [myAudioSession availableInputs];
+    return inputs;
+}
+
+- (NSString *) getAudioInputType: (NSString *) type
+{
+    if ([type isEqualToString:AVAudioSessionPortBuiltInMic]){
+        return @"Phone";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortHeadsetMic]){
+        return @"Headset";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortHeadphones]){
+        return @"Headset";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothHFP]){
+        return @"Bluetooth";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBluetoothA2DP]){
+        return @"Bluetooth";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortBuiltInSpeaker]){
+        return @"Speaker";
+    }
+    else if ([type isEqualToString:AVAudioSessionPortCarAudio]) {
+        return @"CarAudio";
+    }
+    else{
+        return nil;
+    }
+}
+
+- (NSString *) getSelectedAudioRoute
+{
+    AVAudioSession* myAudioSession = [AVAudioSession sharedInstance];
+    AVAudioSessionRouteDescription *currentRoute = [myAudioSession currentRoute];
+    NSArray *selectedOutputs = currentRoute.outputs;
+    
+    AVAudioSessionPortDescription *selectedOutput = selectedOutputs[0];
+    
+    if(selectedOutput && [selectedOutput.portType isEqualToString:AVAudioSessionPortBuiltInReceiver]) {
+        return @"Phone";
+    }
+    
+    return [self getAudioInputType: selectedOutput.portType];
+}
+
 
 /**
  *  Function called on AVAudioSessionInterruptionNotification

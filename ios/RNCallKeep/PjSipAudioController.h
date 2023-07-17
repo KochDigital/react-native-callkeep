@@ -59,4 +59,12 @@ typedef NS_ENUM(NSInteger, PjSipAudioControllerOutputs) {
  */
 - (void)deactivateAudioSession;
 
+- (bool)setAudioRoute: (NSString *) inputName;
+
+- (NSArray *) getAudioInputs;
+
+- (NSString *) getAudioInputType: (NSString *) type;
+
+- (NSString *) getSelectedAudioRoute;
+
 @end

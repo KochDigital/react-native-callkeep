@@ -303,5 +303,21 @@
     return nil;
 }
 
++ (void)parseSIPURI:(NSString *)remoteUri intoName:(NSString **)remoteName andNumber:(NSString **)remoteNumber {
+    if (remoteUri.length > 0) {
+        NSRegularExpression *regexWithName = [NSRegularExpression regularExpressionWithPattern:@"\"([^\"]+)\" <sip:([^@]+)@" options:0 error:nil];
+        NSTextCheckingResult *matchWithName = [regexWithName firstMatchInString:remoteUri options:0 range:NSMakeRange(0, remoteUri.length)];
+        
+        NSRegularExpression *regexWithoutName = [NSRegularExpression regularExpressionWithPattern:@"sip:([^@]+)@" options:0 error:nil];
+        NSTextCheckingResult *matchWithoutName = [regexWithoutName firstMatchInString:remoteUri options:0 range:NSMakeRange(0, remoteUri.length)];
+        
+        if (matchWithName) {
+            *remoteName = [remoteUri substringWithRange:[matchWithName rangeAtIndex:1]];
+            *remoteNumber = [remoteUri substringWithRange:[matchWithName rangeAtIndex:2]];
+        } else if (matchWithoutName) {
+            *remoteNumber = [remoteUri substringWithRange:[matchWithoutName rangeAtIndex:1]];
+        }
+    }
+}
 
 @end
