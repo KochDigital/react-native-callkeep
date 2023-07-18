@@ -589,7 +589,6 @@ export default class Endpoint extends EventEmitter {
          * @property {Account} account
          */
     this.emit('connectivity_changed', new Account(data))
-    console.log('PJSIP: Connectivity changed')
   }
 
   /**
@@ -620,7 +619,6 @@ export default class Endpoint extends EventEmitter {
          * @property {Call} call
          */
     this.emit('call_received', new Call(data))
-    console.log('PJSIP: Call received')
   }
 
   /**
@@ -636,7 +634,6 @@ export default class Endpoint extends EventEmitter {
          * @property {Call} call
          */
     this.emit('call_changed', new Call(data))
-    console.log('PJSIP: Call changed')
   }
 
   /**
@@ -652,7 +649,6 @@ export default class Endpoint extends EventEmitter {
          * @property {Call} call
          */
     this.emit('call_terminated', new Call(data))
-    console.log('PJSIP: Call terminated')
   }
 
   /**
@@ -668,7 +664,6 @@ export default class Endpoint extends EventEmitter {
          * @property bool lock
          */
     this.emit('call_screen_locked', lock)
-    console.log('PJSIP: Call screen locked')
   }
 
   /**
@@ -684,7 +679,6 @@ export default class Endpoint extends EventEmitter {
          * @property {Message} message
          */
     this.emit('message_received', new Message(data))
-    console.log('PJSIP: Message received')
   }
 
   /**
