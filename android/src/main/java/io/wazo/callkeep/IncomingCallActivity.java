@@ -74,9 +74,6 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
     private Integer timeout = 0;
     private String uuid = "";
     static boolean active = false;
-    private static Vibrator v = (Vibrator) RNCallKeepModule.reactContext.getSystemService(Context.VIBRATOR_SERVICE);
-    private long[] pattern = {0, 1000, 800};
-    private static MediaPlayer player = MediaPlayer.create(RNCallKeepModule.reactContext, Settings.System.DEFAULT_RINGTONE_URI);
     private Timer timer;
 
     private IncomingCallBroadcastReceiver mMessageReceiver;
@@ -160,17 +157,11 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
                 | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 
-        v.vibrate(pattern, 0);
-        player.start();
-
         AnimateImage acceptCallBtn = findViewById(R.id.ivAcceptCall);
         acceptCallBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 try {
-                    v.cancel();
-                    player.stop();
-                    player.prepareAsync();
                     acceptDialing();
                 } catch (Exception e) {
                     WritableMap params = Arguments.createMap();
@@ -185,9 +176,6 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
         rejectCallBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                v.cancel();
-                player.stop();
-                player.prepareAsync();
                 dismissDialing();
             }
         });
@@ -201,9 +189,6 @@ public class IncomingCallActivity extends AppCompatActivity implements IncomingC
     }
 
     public void dismissIncoming() {
-        v.cancel();
-        player.stop();
-        player.prepareAsync();
         dismissDialing();
     }
 

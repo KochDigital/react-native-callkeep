@@ -2,19 +2,10 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@color/background"
+    android:background="@android:color/black"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical">
-
-    <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:adjustViewBounds="false"
-        android:scaleType="fitXY"
-        android:contentDescription="@string/background"
-        app:srcCompat="@drawable/bg_call" />
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -32,9 +23,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:fontFamily="sans-serif"
+            android:fontFamily="SFProDisplayBold"
             android:textColor="#FFFFFF"
-            android:textSize="22sp"
+            android:textSize="32sp"
             tools:text="612383580706" />
 
         <TextView
@@ -42,10 +33,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:fontFamily="sans-serif"
+            android:fontFamily="SFProDisplayRegular"
             android:text="Incoming Audio Call"
             android:textColor="#ADADAD"
-            android:textSize="14sp" />
+            android:textSize="16sp" />
 
     </LinearLayout>
 
@@ -65,12 +56,12 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:layout_marginBottom="60dp"
-            android:layout_marginEnd="140dp"
+            android:layout_marginEnd="100dp"
             >
             <io.wazo.callkeep.AnimateImage
                 android:id="@+id/ivDeclineCall"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_decline_call"
                 />
@@ -84,8 +75,7 @@
                 android:gravity="center"
                 android:text="@string/decline"
                 android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:visibility="invisible" />
+                android:textSize="14sp"/>
         </LinearLayout>
 
         <LinearLayout
@@ -98,8 +88,8 @@
             >
             <io.wazo.callkeep.AnimateImage
                 android:id="@+id/ivAcceptCall"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_accept_call"
                 />
@@ -113,8 +103,7 @@
                 android:gravity="center"
                 android:text="@string/accept"
                 android:textColor="#FFFFFF"
-                android:textSize="14sp"
-                android:visibility="invisible" />
+                android:textSize="14sp" />
         </LinearLayout>
 
     </LinearLayout>
