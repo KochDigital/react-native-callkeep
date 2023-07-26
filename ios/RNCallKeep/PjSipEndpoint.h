@@ -4,19 +4,28 @@
 #import "PjSipAccount.h"
 #import "PjSipCall.h"
 #import "PjSipModule.h"
+#import "PjSipRingback.h"
+#import "PjSipAudioController.h"
+#import "PjSipCustomStringArray.h"
 
 
 @interface PjSipEndpoint : NSObject
 
 @property NSMutableDictionary* accounts;
 @property NSMutableDictionary* calls;
+@property PjSipCustomStringArray* endedCallIds;
 @property(nonatomic, strong) PjSipModule *bridge;
+@property (strong, nonatomic) PjSipRingback *ringback;
+@property (strong, nonatomic) PjSipAudioController * audioController;
+
 
 @property pjsua_transport_id tcpTransportId;
 @property pjsua_transport_id udpTransportId;
 @property pjsua_transport_id tlsTransportId;
 
 @property bool isSpeaker;
+  
+@property pj_pool_t * _Nullable pjPool;
 
 +(instancetype)instance;
 
@@ -30,6 +39,7 @@
 -(PjSipCall *)makeCall:(PjSipAccount *) account destination:(NSString *)destination callSettings: (NSDictionary *)callSettings msgData: (NSDictionary *)msgData;
 -(void)pauseParallelCalls:(PjSipCall*) call; // TODO: Remove this feature.
 -(PjSipCall *)findCall:(int)callId;
+-(PjSipCall *)findCallWithUuid:(NSString *)callUuid;
 -(void)useSpeaker;
 -(void)useEarpiece;
 

@@ -169,7 +169,7 @@ public class PjSipService extends Service {
             if (mServiceConfiguration.isUserAgentNotEmpty()) {
                 epConfig.getUaConfig().setUserAgent(mServiceConfiguration.getUserAgent());
             } else {
-                epConfig.getUaConfig().setUserAgent("CobhamSatcom Android lib 5.0.10");
+                epConfig.getUaConfig().setUserAgent("CobhamSatcom Android lib 5.3.2");
             }
 
             if (mServiceConfiguration.isStunServersNotEmpty()) {
@@ -1201,7 +1201,7 @@ public class PjSipService extends Service {
                     // Acquire wifi lock
                     mWifiLock.acquire();
 
-                    if (callState == pjsip_inv_state.PJSIP_INV_STATE_EARLY || callState == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
+                    if (callState == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
                         mAudioManager.setMode(AudioManager.MODE_IN_CALL);
                     }
                 }

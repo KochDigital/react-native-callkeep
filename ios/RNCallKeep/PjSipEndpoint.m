@@ -10,6 +10,7 @@
 #import "PjSipEndpoint.h"
 #import "PjSipMessage.h"
 #import "PjSipModule.h"
+#import "RNCallKeep.h"
 
 @implementation PjSipEndpoint
 
@@ -42,7 +43,7 @@
         pjsua_config cfg;
         pjsua_config_default(&cfg);
 
-        cfg.user_agent = pj_str("CobhamSatcom iOS lib 5.0.10");
+        cfg.user_agent = pj_str("CobhamSatcom iOS lib 5.3.2");
         // cfg.cb.on_reg_state = [self performSelector:@selector(onRegState:) withObject: o];
         cfg.cb.on_reg_state = &onRegStateChanged;
         cfg.cb.on_incoming_call = &onCallReceived;
@@ -113,6 +114,10 @@
     status = pjsua_start();
     if (status != PJ_SUCCESS) NSLog(@"Error starting pjsua");
     
+    self.ringback = [[PjSipRingback alloc] init];
+    self.audioController = [[PjSipAudioController alloc] init];
+    self.endedCallIds = [[PjSipCustomStringArray alloc] initWithCapacity:5];
+    
     return self;
 }
 
@@ -151,9 +156,9 @@
     }
     
     pjsua_acc_config cfg_update;
-    pj_pool_t *pool = pjsua_pool_create("tmp-pjsua", 1000, 1000);
+    self.pjPool = pjsua_pool_create("tmp-pjsua", 1000, 1000);
     pjsua_acc_config_default(&cfg_update);
-    pjsua_acc_get_config(accountId, pool, &cfg_update);
+    pjsua_acc_get_config(accountId, self.pjPool, &cfg_update);
     pjsua_update_stun_servers(size, srv, false);
     
     pjsua_acc_modify(accountId, &cfg_update);
@@ -186,6 +191,7 @@
 #pragma mark Calls
 
 -(PjSipCall *) makeCall:(PjSipAccount *) account destination:(NSString *)destination callSettings: (NSDictionary *)callSettingsDict msgData: (NSDictionary *)msgDataDict {
+    NSLog(@"PjSipEndpoint makecall: %@", destination);
     pjsua_call_setting callSettings;
     [PjSipUtil fillCallSettings:&callSettings dict:callSettingsDict];
     
@@ -203,7 +209,8 @@
     pjsua_call_id callId;
     pj_str_t callDest = pj_str((char *) [destination UTF8String]);
     
-    [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:nil];
+    [[self audioController] configureAudioSession];
+    NSLog(@"PjSipEndpoint configureAudioSession");
     
     pj_status_t status = pjsua_call_make_call(account.id, &callDest, &callSettings, NULL, &msgData, &callId);
     
@@ -213,6 +220,7 @@
     pj_pool_release(pool);
     
     PjSipCall *call = [PjSipCall itemConfig:callId];
+    call.isIncoming = false;
     self.calls[@(callId)] = call;
     
     return call;
@@ -220,6 +228,17 @@
 
 - (PjSipCall *) findCall: (int) callId {
     return self.calls[@(callId)];
+}
+
+-(PjSipCall *)findCallWithUuid:(NSString *)callUuid {
+    for (NSString *key in self.calls) {
+        PjSipCall *call = self.calls[key];
+        
+        if ([call.callId isEqual:callUuid]) {
+            return call;
+        }
+    }
+    return nil;
 }
 
 -(void) pauseParallelCalls:(PjSipCall*) call {
@@ -240,8 +259,7 @@
 -(void)useSpeaker {
     self.isSpeaker = true;
     
-    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    [audioSession overrideOutputAudioPort:AVAudioSessionPortOverrideSpeaker error:nil];
+    [self.audioController setOutput:PjSipAudioControllerOutputSpeaker];
     
     for (NSString *key in self.calls) {
         PjSipCall *call = self.calls[key];
@@ -252,8 +270,7 @@
 -(void)useEarpiece {
     self.isSpeaker = false;
     
-    AVAudioSession *audioSession = [AVAudioSession sharedInstance];
-    [audioSession overrideOutputAudioPort:AVAudioSessionPortOverrideNone error:nil];
+    [self.audioController setOutput:PjSipAudioControllerOutputOther];
     
     for (NSString *key in self.calls) {
         PjSipCall *call = self.calls[key];
@@ -367,6 +384,20 @@ static void onCallReceived(pjsua_acc_id accId, pjsua_call_id callId, pjsip_rx_da
     [endpoint assignCall:call callId:callId];
     
     [endpoint emmitCallReceived:call];
+    
+    [RNCallKeep reportNewIncomingCall: call.callId
+                               handle: @"Connecting..."
+                           handleType: @"number"
+                             hasVideo: NO
+                  localizedCallerName: @""
+                      supportsHolding: YES
+                         supportsDTMF: YES
+                     supportsGrouping: YES
+                   supportsUngrouping: YES
+                          fromPushKit: NO
+                              payload: nil
+                withCompletionHandler: nil];
+    
     pjsua_call_answer(callId, 180, NULL, NULL);
 }
 
@@ -385,11 +416,58 @@ static void onCallStateChanged(pjsua_call_id callId, pjsip_event *event) {
     [call onStateChanged:callInfo];
     
     if (callInfo.state == PJSIP_INV_STATE_DISCONNECTED) {
+        if(endpoint.ringback.isPlaying) {
+            [endpoint.ringback stop];
+        }
+        
+        if(call.isIncoming) {
+            [endpoint.endedCallIds push:call.callId];
+        }
+        
         [endpoint.calls removeObjectForKey:@(callId)];
         [endpoint emmitCallTerminated:call];
-    } else {
-        [endpoint emmitCallChanged:call];
     }
+    
+    [endpoint emmitCallChanged:call];
+    
+    if (callInfo.state == PJSIP_INV_STATE_EARLY) {
+        if(call.isIncoming) {
+            NSString * remoteName = nil;
+            NSString * remoteNumber = nil;
+            
+            [PjSipUtil parseSIPURI:[PjSipUtil toString:&callInfo.remote_info] intoName:&remoteName andNumber:&remoteNumber];
+            
+            NSString *receiver = (remoteName != nil) ? remoteName : remoteNumber;
+
+            [RNCallKeep reportNewIncomingCall: call.callId
+                                       handle: receiver
+                                   handleType: @"number"
+                                     hasVideo: NO
+                          localizedCallerName: @""
+                              supportsHolding: YES
+                                 supportsDTMF: YES
+                             supportsGrouping: YES
+                           supportsUngrouping: YES
+                                  fromPushKit: NO
+                                      payload: nil
+                        withCompletionHandler: nil];
+        }
+        
+        if(!call.isIncoming && [[endpoint.calls allKeys] count] == 1) {
+            [endpoint.ringback start];
+        }
+    } else if (callInfo.state == PJSIP_INV_STATE_CONFIRMED) {
+        if(endpoint.ringback.isPlaying) {
+            [endpoint.ringback stop];
+        }
+    } else if (callInfo.state == PJSIP_INV_STATE_DISCONNECTED) {
+        if(endpoint.ringback.isPlaying) {
+            [endpoint.ringback stop];
+        }
+        [endpoint.calls removeObjectForKey:@(callId)];
+        [endpoint emmitCallTerminated:call];
+    }
+    
 }
 
 static void onCallMediaStateChanged(pjsua_call_id callId) {
