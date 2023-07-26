@@ -66,15 +66,6 @@ static PjSipModule * _instance = nil;
   }
 }
 
-- (void)configureAudioSession
-{
-    pjsua_set_no_snd_dev();
-    pj_status_t status;
-    status = pjsua_set_snd_dev(PJMEDIA_AUD_DEFAULT_CAPTURE_DEV, PJMEDIA_AUD_DEFAULT_PLAYBACK_DEV);
-    if (status != PJ_SUCCESS) {
-        NSLog(@"Failed to active audio session");
-    }
-}
 
 RCT_EXPORT_METHOD(start: (NSDictionary *) config callback: (RCTResponseSenderBlock) callback) {
     [PjSipEndpoint instance].bridge = self;
@@ -278,11 +269,11 @@ RCT_EXPORT_METHOD(useEarpiece: (int) callId callback:(RCTResponseSenderBlock) ca
 }
 
 RCT_EXPORT_METHOD(activateAudioSession: (RCTResponseSenderBlock) callback) {
-    [self configureAudioSession];
+    [[[PjSipEndpoint instance] audioController] activateAudioSession];
 }
 
 RCT_EXPORT_METHOD(deactivateAudioSession: (RCTResponseSenderBlock) callback) {
-    pjsua_set_no_snd_dev();
+    [[[PjSipEndpoint instance] audioController] deactivateAudioSession];
 }
 
 
@@ -300,7 +291,7 @@ RCT_EXPORT_METHOD(splitConferenceCall: (RCTResponseSenderBlock) callback) {
         [[PjSipConference instance] removeCall:[calls objectForKey:callId]];
     }
     
-    [self configureAudioSession];
+    [[[PjSipEndpoint instance] audioController] activateAudioSession];
 }
 
 RCT_EXPORT_METHOD(splitCall: (int) callId callback:(RCTResponseSenderBlock) callback) {
@@ -308,7 +299,7 @@ RCT_EXPORT_METHOD(splitCall: (int) callId callback:(RCTResponseSenderBlock) call
     PjSipCall *call = [endpoint findCall:callId];
     [[PjSipConference instance] removeCall:call];
     
-    [self configureAudioSession];
+    [[[PjSipEndpoint instance] audioController] activateAudioSession];
 }
 
 

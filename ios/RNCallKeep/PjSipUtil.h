@@ -16,5 +16,7 @@
 
 +(void) fillCallSettings: (pjsua_call_setting*) callSettings dict:(NSDictionary*) dict;
 +(void) fillMsgData: (pjsua_msg_data*) msgData dict:(NSDictionary*) dict pool:(pj_pool_t*) pool;
++(void) parseSIPURI:(NSString *)remoteUri intoName:(NSString **)remoteName andNumber:(NSString **)remoteNumber;
+
 
 @end

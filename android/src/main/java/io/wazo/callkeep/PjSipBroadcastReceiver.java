@@ -159,6 +159,6 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
     private void emit(String eventName, @Nullable Object data) {
         Log.d(TAG, "emit " + eventName + " / " + data);
 
-        context.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, data);
+        PjSipModule.reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class).emit(eventName, data);
     }
 }

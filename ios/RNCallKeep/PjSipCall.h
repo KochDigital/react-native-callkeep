@@ -7,6 +7,7 @@
 @property bool isHeld;
 @property bool isMuted;
 @property bool isConference;
+@property bool isIncoming;
 @property NSMutableDictionary* conferencePeers;
 @property NSString* callId;
 

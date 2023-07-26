@@ -2,6 +2,7 @@ package io.wazo.callkeep;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.media.ToneGenerator;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -30,6 +31,10 @@ public class PjSipCall extends Call {
     private boolean isMuted = false;
 
     private boolean isConference = false;
+
+    private boolean isIncoming = false;
+
+    private ToneGenerator toneGenerator;
 
     public PjSipCall(PjSipAccount acc, int call_id) {
         super(acc, call_id);
@@ -155,6 +160,36 @@ public class PjSipCall extends Call {
     @Override
     public void onCallState(OnCallStateParam prm) {
         super.onCallState(prm);
+
+        CallInfo info;
+        int callID;
+        int callState;
+        int callStatus;
+        try {
+             info = getInfo();
+             callID = info.getId();
+             callState = info.getState();
+             callStatus = pjsip_status_code.PJSIP_SC_NULL;
+
+            callStatus = info.getLastStatusCode();
+        } catch (Exception exc) {
+            Log.e(TAG, "An error occurs while getting call info", exc);
+            return;
+        }
+
+        if(callState == pjsip_inv_state.PJSIP_INV_STATE_INCOMING) {
+            isIncoming = true;
+        } else if(callState == pjsip_inv_state.PJSIP_INV_STATE_EARLY) {
+            if(!isIncoming) {
+                toneGenerator = new ToneGenerator(AudioManager.STREAM_VOICE_CALL, 100);
+                toneGenerator.startTone(ToneGenerator.TONE_SUP_RINGTONE);
+            }
+        }  else if(callState == pjsip_inv_state.PJSIP_INV_STATE_CONFIRMED) {
+            checkAndStopLocalRingBackTone();
+        } else if(callState == pjsip_inv_state.PJSIP_INV_STATE_DISCONNECTED) {
+            checkAndStopLocalRingBackTone();
+        }
+
 
         getService().emmitCallStateChanged(this, prm);
     }
@@ -354,5 +389,13 @@ public class PjSipCall extends Call {
 
     public String toJsonString() {
         return toJson().toString();
+    }
+
+    private void checkAndStopLocalRingBackTone(){
+        if (toneGenerator != null){
+            toneGenerator.stopTone();
+            toneGenerator.release();
+            toneGenerator = null;
+        }
     }
 }

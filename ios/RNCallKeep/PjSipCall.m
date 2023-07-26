@@ -17,6 +17,7 @@
         self.id = id;
         self.isHeld = false;
         self.isMuted = false;
+        self.isIncoming = true;
     }
     
     return self;
@@ -136,13 +137,15 @@
     // TODO: Fallback for "The RFC 2833 payload format did not work".
     
     pj_str_t value = pj_str((char *) [digits UTF8String]);
-    pjsua_call_dial_dtmf(self.id, &value);
+    pjsua_call_dial_dtmf(self.id, &value );
 }
 
 #pragma mark - Callback methods
 
 - (void)onStateChanged:(pjsua_call_info)info {
-    // Ignore
+    if(info.state == PJSIP_INV_STATE_CALLING) {
+        self.isIncoming = NO;
+    }
 }
 
 /**

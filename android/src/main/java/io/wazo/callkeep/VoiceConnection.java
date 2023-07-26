@@ -403,7 +403,7 @@ public class VoiceConnection extends Connection {
             builder.setContentTitle("Incoming call");
             builder.setContentText(handle.get(EXTRA_CALLER_NAME));
             builder.setCategory(NotificationCompat.CATEGORY_CALL);
-            builder.setSound(Settings.System.DEFAULT_RINGTONE_URI);
+//            builder.setSound(Settings.System.DEFAULT_RINGTONE_URI);
 
             // bundle to send to the receiver
             Bundle extras = new Bundle();
