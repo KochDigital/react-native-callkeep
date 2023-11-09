@@ -1244,7 +1244,7 @@
              switch (intent.getAction()) {
                  case ACTION_END_CALL:
                      args.putString("callUUID", attributeMap.get(EXTRA_CALL_UUID));
- 
+                     sendEventToJS("RNCallKeepPerformEndCallAction", args);
                      break;
                  case ACTION_ANSWER_CALL:
                      String callUUID = attributeMap.get(EXTRA_CALL_UUID);
