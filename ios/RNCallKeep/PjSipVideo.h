@@ -1,6 +1,6 @@
 // #import <Foundation/Foundation.h>
 // #import <React/RCTViewManager.h>
-// #import <VialerPJSIP/pjsua.h>
+// #import "../VialerPJSIP.framework/Versions/A/Headers/pjsua.h"
 // #import <AVFoundation/AVFoundation.h>
 
 // // TODO: Add ability to change device orientation!

@@ -1,6 +1,6 @@
 // #import <React/RCTViewManager.h>
 // #import "PjSipVideoViewManager.m"
-// #import <VialerPJSIP/pjsua.h>
+// #import "../VialerPJSIP.framework/Versions/A/Headers/pjsua.h"
 // #import <React/RCTView.h>
 
 // /**
