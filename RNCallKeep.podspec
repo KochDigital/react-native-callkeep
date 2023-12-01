@@ -12,6 +12,8 @@ Pod::Spec.new do |s|
   s.source              = { :git => package['repository']['url'], :tag => "v#{s.version}" }
   s.requires_arc        = true
   s.platform            = :ios, "8.0"
+  # s.ios.deployment_target = '15.0'
+  s.ios.public_header_files =  'ios/VialerPJSIP.framework/Versions/A/Headers/*.h'
   s.source_files        = "ios/RNCallKeep/*.{h,m}"
   s.dependency 'React'
   
