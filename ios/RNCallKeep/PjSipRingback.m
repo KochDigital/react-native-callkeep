@@ -4,7 +4,7 @@
 //
 
 #import "PjSipRingback.h"
-#import "../VialerPJSIP.framework/Versions/A/Headers/pjsua.h"
+#import <VialerPJSIP/pjsua.h>
 #import "PjSipEndpoint.h"
 
 static int const PjSipRingbackChannelCount = 1;

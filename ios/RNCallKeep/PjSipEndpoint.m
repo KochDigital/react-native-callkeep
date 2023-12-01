@@ -4,7 +4,7 @@
 #import <React/RCTConvert.h>
 #import <React/RCTEventDispatcher.h>
 #import <React/RCTUtils.h>
-#import "../VialerPJSIP.framework/Versions/A/Headers/pjsua.h"
+#import <VialerPJSIP/pjsua.h>
 
 #import "PjSipUtil.h"
 #import "PjSipEndpoint.h"
