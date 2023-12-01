@@ -6,7 +6,7 @@
 //
 #import <React/RCTUtils.h>
 
-#import <VialerPJSIP/pjsua.h>
+#import "pjsua.h"
 
 #import "PjSipCall.h"
 

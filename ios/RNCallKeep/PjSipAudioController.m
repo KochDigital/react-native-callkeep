@@ -6,7 +6,7 @@
 @import AVFoundation;
 
 #import "PjSipAudioController.h"
-#import <VialerPJSIP/pjsua.h>
+#import "pjsua.h"
 
 NSString * const PjSipAudioControllerAudioInterrupted = @"PjSipAudioControllerAudioInterrupted";
 NSString * const PjSipAudioControllerAudioResumed = @"PjSipAudioControllerAudioResumed";
