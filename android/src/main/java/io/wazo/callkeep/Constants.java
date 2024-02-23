@@ -34,6 +34,7 @@ public class Constants {
     public static final int REQUEST_CODE_END_CALL = 1001;
 
     public static final int FOREGROUND_SERVICE_TYPE_MICROPHONE = 128;
+    public static final int FOREGROUND_SERVICE_TYPE_PHONE_CALL = 4;
 
     public static final String ACTION_CALL_ANSWER = "io.wazo.callkeep.ACTION_CALL_ANSWER";
     public static final String ACTION_CALL_END = "io.wazo.callkeep.ACTION_CALL_END";
