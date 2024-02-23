@@ -338,7 +338,7 @@ public class VoiceConnectionService extends ConnectionService {
         Notification notification = notificationBuilder.build();
 
         try {
-            startForeground(FOREGROUND_SERVICE_TYPE_PHONE_CALL, notification);
+            startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE+FOREGROUND_SERVICE_TYPE_PHONE_CALL, notification);
         } catch (Exception e) {
             Log.w(TAG, "[VoiceConnectionService] Can't start foreground service : " + e.toString());
         }
