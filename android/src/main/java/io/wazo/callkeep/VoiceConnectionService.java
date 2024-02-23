@@ -353,7 +353,7 @@ public class VoiceConnectionService extends ConnectionService {
         }
 
         try {
-            stopForeground(FOREGROUND_SERVICE_TYPE_PHONE_CALL);
+            stopForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE);
         } catch (Exception e) {
             Log.w(TAG, "[VoiceConnectionService] can't stop foreground service :" + e.toString());
         }
