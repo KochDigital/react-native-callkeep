@@ -31,6 +31,7 @@ import io.wazo.callkeep.dto.CallSettingsDTO;
 import io.wazo.callkeep.dto.ServiceConfigurationDTO;
 import io.wazo.callkeep.dto.SipMessageDTO;
 import io.wazo.callkeep.utils.ArgumentUtils;
+import static io.wazo.callkeep.Constants.FOREGROUND_SERVICE_TYPE_PHONE_CALL;
 
 import org.json.JSONObject;
 import org.pjsip.pjsua2.AccountConfig;
@@ -298,7 +299,12 @@ public class PjSipService extends Service {
         Notification notification = notificationBuilder.build();
 
         try {
-            startForeground(FOREGROUND_SERVICE_ID, notification);
+            
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU) {
+                startForeground(FOREGROUND_SERVICE_ID, notification);
+            } else {
+                startForeground(FOREGROUND_SERVICE_ID, notification, FOREGROUND_SERVICE_TYPE_PHONE_CALL);
+            }
             Log.d(TAG, "[PjSipService] Starting foreground service: startForeground called successfully");
         } catch (Exception e) {
             Log.w(TAG, "[PjSipService] Can't start foreground service : " + e.toString());
