@@ -338,10 +338,10 @@ public class VoiceConnectionService extends ConnectionService {
         Notification notification = notificationBuilder.build();
 
         try {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification);
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.TIRAMISU) {
+                startForeground(FOREGROUND_SERVICE_TYPE_PHONE_CALL, notification);
             } else {
-                startForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE, notification, FOREGROUND_SERVICE_TYPE_PHONE_CALL);
+                startForeground(FOREGROUND_SERVICE_TYPE_PHONE_CALL, notification, FOREGROUND_SERVICE_TYPE_PHONE_CALL);
             }
         } catch (Exception e) {
             Log.w(TAG, "[VoiceConnectionService] Can't start foreground service : " + e.toString());
@@ -358,7 +358,7 @@ public class VoiceConnectionService extends ConnectionService {
         }
 
         try {
-            stopForeground(FOREGROUND_SERVICE_TYPE_MICROPHONE);
+            stopForeground(FOREGROUND_SERVICE_TYPE_PHONE_CALL);
         } catch (Exception e) {
             Log.w(TAG, "[VoiceConnectionService] can't stop foreground service :" + e.toString());
         }
