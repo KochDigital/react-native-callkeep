@@ -35,8 +35,11 @@ public class PjSipModule extends ReactContextBaseJavaModule {
 
         // Module could be started several times, but we have to register receiver only once.
         if (receiver == null) {
+            Log.d(TAG, "[RNCallKeepModule] receiver == null");
             receiver = new PjSipBroadcastReceiver(context);
             this.getReactApplicationContext().registerReceiver(receiver, receiver.getFilter(), this.getReactApplicationContext().RECEIVER_NOT_EXPORTED);
+            Log.d(TAG, "[RNCallKeepModule] receiver registered, with filter:"+receiver.getFilter());
+
         } else {
             receiver.setContext(context);
         }
