@@ -31,15 +31,18 @@ public class PjSipBroadcastReceiver extends BroadcastReceiver {
 
     public PjSipBroadcastReceiver(ReactApplicationContext context) {
         this.context = context;
+        Log.d(TAG, "created");
     }
 
     public void setContext(ReactApplicationContext context) {
         this.context = context;
+        Log.d(TAG, "set context");
     }
 
     public int register(Callback callback) {
         int id = ++seq;
         callbacks.put(id, callback);
+        Log.d(TAG, "added callback");
         return id;
     }
 
