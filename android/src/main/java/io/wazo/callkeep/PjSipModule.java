@@ -39,7 +39,9 @@ public class PjSipModule extends ReactContextBaseJavaModule {
         if (receiver == null) {
             receiver = new PjSipBroadcastReceiver(context);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                this.getReactApplicationContext().registerReceiver(receiver, receiver.getFilter(), Context.RECEIVER_NOT_EXPORTED);
+                // RECEIVER_EXPORTED is required because PjSipBroadcastEmiter sends
+                // implicit broadcasts from PjSipService via context.sendBroadcast()
+                this.getReactApplicationContext().registerReceiver(receiver, receiver.getFilter(), Context.RECEIVER_EXPORTED);
             } else {
                 this.getReactApplicationContext().registerReceiver(receiver, receiver.getFilter());
             }
