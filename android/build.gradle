@@ -1,14 +1,3 @@
-buildscript {
-    repositories {
-        mavenCentral()
-        google()
-    }
-
-    dependencies {
-        classpath 'com.android.tools.build:gradle:3.0.1'
-    }
-}
-
 apply plugin: 'com.android.library'
 
 def safeExtGet(prop, fallback) {
@@ -16,11 +5,12 @@ def safeExtGet(prop, fallback) {
 }
 
 android {
-    compileSdkVersion safeExtGet('compileSdkVersion', 28)
+    namespace 'io.wazo.callkeep'
+    compileSdkVersion safeExtGet('compileSdkVersion', 34)
 
     defaultConfig {
         minSdkVersion safeExtGet('minSdkVersion', 23)
-        targetSdkVersion safeExtGet('targetSdkVersion', 28)
+        targetSdkVersion safeExtGet('targetSdkVersion', 34)
         versionCode 1
         versionName "1.0"
     }
